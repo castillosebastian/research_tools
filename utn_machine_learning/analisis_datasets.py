@@ -1,3 +1,4 @@
+#%%
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +14,7 @@ df = pd.read_csv("data/iris.csv")
 # Primeros registros del dataset
 df.head()
 
-# análisis estadístico del dataset (atributos numéricos)
+#%% análisis estadístico del dataset (atributos numéricos)
 df.describe()
 
 # histograma por atributo (feature)
