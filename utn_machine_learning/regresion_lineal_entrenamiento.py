@@ -8,6 +8,7 @@ import matplotlib.patches as patches
 from collections import namedtuple
 from matplotlib import cm
 import time
+from sklearn import data, linear_model
 
 OptimizationState = namedtuple('OptimizationState', ['error_history','max_iterations'])
 IterationState = namedtuple('IterationState', ['iteration','m','b','dEdm', 'dEdb','yhat','errors','mean_error'])
@@ -117,13 +118,9 @@ def visualizar(plot_state,x,y,iteration_state,optimal,optimization_state):
 ###############################################################################
 
 #%% Carga de datos
-dataset_base="./data/"
-dataset="study_regression_small.csv"
-#dataset="anscombe4.csv"
-dataset_path=os.path.join(dataset_base,dataset)
-data=np.loadtxt(open(dataset_path, "rb"), delimiter=",", skiprows=1)
+os.getcwd()
+data=np.loadtxt(open('data/study_regression_small.csv', "rb"), delimiter=",", skiprows=1)
 x,y=data[:,0],data[:,1]
-
 
 #%% ## *******  PARÁMETROS *******  ##########
 ## Parámetros iniciales del modelo (probar valores entre -5 y 5)

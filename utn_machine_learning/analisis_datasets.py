@@ -47,4 +47,5 @@ x= df.drop('name', axis=1)
 scaler = StandardScaler()  
 scaler.fit(x)  
 x= scaler.transform(x)
-    
+
+# Fin del script
