@@ -1,15 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jul 19 23:13:00 2018
-
-@author: Franco
-
-Ejercicio de Clasificación Binaria.
-
-Dataset utilizado: Breast Cancer. 2 clases. 
-
-Clasificador: Regresión logística (perceptron)
-"""
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import  LogisticRegression
 from sklearn.metrics import  f1_score, recall_score, precision_score, accuracy_score

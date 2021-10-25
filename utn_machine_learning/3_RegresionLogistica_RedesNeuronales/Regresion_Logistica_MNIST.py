@@ -4,8 +4,8 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import f1_score, recall_score, precision_score, accuracy_score,classification_report
-import AA_utils # funciones útiles de visualización para Aprendizaje Automático
+from sklearn.metrics import accuracy_score,classification_report
+import utn_utils1  # funciones útiles de visualización para Aprendizaje Automático
 
 #%% PARAM
 PLOT_CONF_MAT= 1 

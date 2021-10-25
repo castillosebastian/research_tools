@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 20 17:39:46 2018
-
-@author: Franco Ronchetti
-
-Funciones utilitarias para visualizacióny procesamiento de imágenes. Curso Aprendizaje Automático.
-"""
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score, precision_recall_curve
 import numpy as np

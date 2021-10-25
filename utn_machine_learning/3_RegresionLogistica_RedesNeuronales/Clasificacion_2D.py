@@ -1,16 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-@author: Franco
-"""
-
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
-from sklearn.linear_model import  LogisticRegression
-from sklearn.metrics import f1_score, recall_score, precision_score, accuracy_score,classification_report
+from sklearn.metrics import accuracy_score,classification_report
 import pandas as pd
-import AA_utils # funciones útiles de visualización para Aprendizaje Automático
+import utn_utils1  # funciones útiles de visualización para Aprendizaje Automático
 
 #%% Cargar dataset
 db_name= '2D_circulos.csv' # evaluar con otros data
