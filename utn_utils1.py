@@ -13,7 +13,6 @@ from skimage import exposure
 #       pred_target = vector con valores calculados por un modelo
 #       classes = lista de strings con los nombres de las clases.
 def plot_confusion_matrix(real_target, pred_target, classes=[],  normalize=False, title='Matriz de confusión', cmap=plt.cm.Blues):
-
     from sklearn.metrics import confusion_matrix
     import itertools
     if (len(classes)==0):
