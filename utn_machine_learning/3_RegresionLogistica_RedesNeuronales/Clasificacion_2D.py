@@ -3,11 +3,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score,classification_report
 import pandas as pd
-import utn_utils1  # funciones útiles de visualización para Aprendizaje Automático
+laoad utn_utils1.py  # funciones útiles de visualización para Aprendizaje Automático
 
 #%% Cargar dataset
 db_name= '2D_circulos.csv' # evaluar con otros data
-
 df= pd.read_csv('data/'+ db_name)
 data= df.values
 x= data[:,0:-1]
@@ -74,14 +73,14 @@ print("Análisis de probabilidades: mean %.2f,  std %.2f" % (y_pred_proba.mean()
 
 #%% plot boundary
 if ((PLOT_BOUNDARY) & (x.shape[1]==2)):
-    AA_utils.plot_frontera_de_decision_2D(modelo, x_train, y_train, x_test=x_test, y_test=y_test, sigmoid=PLOT_SIGMOID)  
+    utn_utils1.plot_frontera_de_decision_2D(modelo, x_train, y_train, x_test=x_test, y_test=y_test, sigmoid=PLOT_SIGMOID)
 
 #%% ROC
 if (PLOT_ROC & (n_clases==2)):
-    AA_utils.plot_ROC_curve(modelo, x_test, y_test)
+    utn_utils1.plot_ROC_curve(modelo, x_test, y_test)
 
 #%% CONFUSION MATRIX
 if (PLOT_CONF_MAT):
     y_pred= modelo.predict(x_test)
-    AA_utils.plot_confusion_matrix(y_test, y_pred)
+    utn_utils1.plot_confusion_matrix(y_test, y_pred)
 

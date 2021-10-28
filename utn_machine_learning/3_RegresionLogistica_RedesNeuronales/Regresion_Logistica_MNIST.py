@@ -41,7 +41,7 @@ print(classification_report(y_test, y_pred))
 #%% CONFUSION MATRIX
 if (PLOT_CONF_MAT):
     y_pred= modelo.predict(X_test)
-    AA_utils.plot_confusion_matrix(y_test, y_pred)
+    utn_utils1.plot_confusion_matrix(y_test, y_pred)
     
 #%% Visualizar una imagen aleatoria
 i=  np.random.randint(0, X_test.shape[0])
