@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score,classification_report
 import pandas as pd
-laoad utn_utils1.py  # funciones útiles de visualización para Aprendizaje Automático
+#import utn_utils1  # funciones útiles de visualización para Aprendizaje Automático
 
 #%% Cargar dataset
 db_name= '2D_circulos.csv' # evaluar con otros data
