@@ -34,12 +34,4 @@ dfxtf = df[df['tipo_fallo'].isin(tipo_felegidos)]
 # https://github.com/ArmandDS/bert_for_long_text/blob/master/final_bert_long_docs.ipynb
 # https://towardsdatascience.com/implementing-multi-class-text-classification-with-doc2vec-df7c3812824d
 
-
-
-
-
-
-
-
 # has at least 5000 words?
-# algo
