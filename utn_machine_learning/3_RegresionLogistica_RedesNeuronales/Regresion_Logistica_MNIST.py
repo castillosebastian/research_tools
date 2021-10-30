@@ -38,6 +38,8 @@ y_pred= modelo.predict(X_test)
 print("\nTest   Accuracy: %.2f" % accuracy_score(y_test, y_pred ))
 print(classification_report(y_test, y_pred))
 
+# Train Accuray 0.93 vs Test A 0.91
+
 #%% CONFUSION MATRIX
 if (PLOT_CONF_MAT):
     y_pred= modelo.predict(X_test)
@@ -82,3 +84,5 @@ if (PLOT_COEF):
     
             fig.colorbar(ax_im, ax= ax[row][col], cax=cax) 
             index += 1
+
+# Prueba con NN
