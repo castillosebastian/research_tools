@@ -15,16 +15,18 @@ df = pd.DataFrame(fdatos)
 chart = sns.countplot(df['materia'], palette='RdBu')
 chart.set_xticklabels(chart.get_xticklabels(), rotation=45)
 chart2 = sns.countplot(df['tipo_fallo'], palette='RdBu')
-# Filtrando bd para trabajar con categorías con observaciones
+
+#%% Filtrando bd para trabajar con categorías con observaciones
 df['materia'].value_counts()
 df['tipo_fallo'].value_counts()
 materias_elegidas = ['CIVIL Y COMERCIAL','PENAL','LABORAL']
 tipo_felegidos = ["Sentencia Interlocutoria", 'Sentencia Definitiva']
-#
+
+#%%
 dfxmat = df[df['materia'].notna()]
 dfxmat = df[df['materia'].isin(materias_elegidas)]
 dfxmat['materia'].value_counts()
-#
+#%%
 dfxtf = df[df['tipo_fallo'].isin(tipo_felegidos)]
 
 # Solución:
@@ -38,3 +40,4 @@ dfxtf = df[df['tipo_fallo'].isin(tipo_felegidos)]
 # https://towardsdatascience.com/implementing-multi-class-text-classification-with-doc2vec-df7c3812824d
 
 # has at least 5000 words?
+# %%
