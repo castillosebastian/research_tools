@@ -42,3 +42,4 @@ dfxtf = df[df['tipo_fallo'].isin(tipo_felegidos)]
 
 
 # has at least 5000 words?
+# algo
