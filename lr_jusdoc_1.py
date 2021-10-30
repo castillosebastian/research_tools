@@ -1,13 +1,16 @@
+#%%
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-#open
+
+#%% open
 f = open('data/corpus_textosfallos.json', encoding="utf8")
 d = open('data/corpus_fallosmetdat.json', encoding="utf8")
 fallos = json.load(f)
 fdatos = json.load(d)
-#explorar fdatos
+
+#%%explorar fdatos
 df = pd.DataFrame(fdatos)
 chart = sns.countplot(df['materia'], palette='RdBu')
 chart.set_xticklabels(chart.get_xticklabels(), rotation=45)
