@@ -6,3 +6,4 @@ import matplotlib as plt
 os.getcwd()
 df = pd.read_csv('data/boston.csv')
 print(df.hist())
+# %%
