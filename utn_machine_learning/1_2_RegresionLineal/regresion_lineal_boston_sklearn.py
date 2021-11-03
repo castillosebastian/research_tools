@@ -10,6 +10,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import pandas as pd
 from sklearn.preprocessing import StandardScaler  
 
+
 #%% Cargar dataset 
 data= pd.read_csv("data/boston.csv") 
 x= data.drop('medv', axis=1)
@@ -17,7 +18,7 @@ y= data['medv']
 n,d= x.shape
 print("El dataset tiene %d registros, de %d dimensiones" %(n, d))
 
-# visualizar distribución de los features
+#%% visualizar distribución de los features
 data.hist()
 
 #%% Normalizar los datos
@@ -61,3 +62,5 @@ plt.figure()
 plt.scatter(y, y_predict,alpha=0.7, edgecolor='k'), plt.grid()
 plt.xlabel("valores reales"), plt.ylabel("Valores predichos")
 
+
+# %%
