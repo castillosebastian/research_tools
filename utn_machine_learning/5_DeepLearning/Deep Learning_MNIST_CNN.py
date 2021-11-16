@@ -24,7 +24,7 @@ PLOT_TRAIN_CURVES= 1
 # --------------------------------------------------------------
 
 #%% cARGAR LOS DATOS
-cifar_classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+#cifar_classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 (X_train, Y_train), (X_test, Y_test) = mnist.load_data() #mnist.load_data()
 X_train=X_train / 255 # normalizar 0-1
 X_test= X_test / 255
