@@ -1,0 +1,154 @@
+---
+title: "Analisis_componentes_Ppales"
+author: "Área de Planificación Gestión y Estadística"
+date: "21/3/2022"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("intro.R")
+
+df <- list()
+
+# https://rpubs.com/ercalel/593452
+# https://bookdown.org/jsalinas/tecnicas_multivariadas/acp.html
+
+
+```
+
+# Analisis componente principal
+
+## Fundamentos teóricos: Comprensión de Matrices Ejemplo libro AID, p.88
+
+```{r, fig.width=20, fig.height=18}
+knitr::include_graphics('inversa_matriz.png')
+```
+
+```{r}
+A= matrix(c(1,2,-1,1,0,1,3,1,0,0,2,0,0,0,1,-1), nrow=4,ncol=4,byrow=T)#Ingresaunamatrizde4x4
+A#Muestralamatriz
+```
+```{r}
+eigen(A)
+```
+```{r}
+##Compararlossiguientescálculos:
+sum(diag(A)) #CalculalatrazadeA
+sum(eigen(A)$values) #CalculalasumadelosautovaloresdeA
+# La suma de los valores propios es igual a la traza
+
+```
+```{r}
+##Compararlossiguientescálculos:
+det(A)#CalculaeldeterminantedeA
+prod(eigen(A)$values)#CalculaelproductodelosautovaloresdeA
+t(A)#CalculalatraspuestadeA
+```
+```{r}
+#Observar que lastrazas de una matriz y sutraspuesta son iguales
+sum(diag(t(A))) #Calculala traza de la traspuesta de A
+
+```
+```{r}
+# los determinantes de la traspuesta de A son iguales a los det de A
+det(t(A))
+
+```
+```{r}
+#Observarquelosautovaloresdeunamatrizysutraspuestasonlosmismos
+eigen(t(A))$values
+```
+
+```{r}
+#CalculalainversadeA
+solve(A)
+```
+```{r}
+solve(A)
+```
+
+```{r}
+zapsmall(ginv(A))
+```
+
+```{r}
+# # Verifica que A y solve(A) son matrices inversas
+# A%∗%solve(A) no pude correr por falta libreria 
+zapsmall(ginv(A)) == solve(A)
+```
+```{r}
+all.equal(zapsmall(ginv(A)),solve(A))
+```
+Verifico con funcion de Debora
+
+```{r}
+A%*%solve(A) 
+```
+
+
+```{r}
+#Observarquelosdeterminantesdeunamatriz y su inversa son inversos
+det(A)
+det(solve(A))
+
+```
+
+
+```{r}
+#Observarquelosautovaloresdeunamatrizyysuinversasoninversos
+eigen(A)$values
+eigen(solve(A))$values
+
+```
+# Trabajo practico 2
+
+```{r}
+# Import matrix
+m = as.integer(strsplit(as.character(c("3 1 1 1 3 1 1 1 5")), " ")[[1]])
+m =  matrix(m, nrow = 3, byrow = T)
+m
+
+```
+
+Valores propios
+
+```{r}
+lambda <- eigen(m)
+lambda
+```
+Primer valor propio
+```{r}
+lambda$values[1]
+
+```
+
+# PCA
+
+
+```{r}
+df_raw <- readxl::read_excel("~/research_tools/utn_analisis_inteligente_datos/nadadores.xlsx")
+#df <- df 
+df = df_raw %>% dplyr::select(-Nadador)
+df
+```
+
+```{r}
+df_pca_conv =  prcomp(df, center = TRUE, scale. = F)
+df_pca_corr =  prcomp(df, center = TRUE, scale. = T)
+
+```
+
+Componentes principales matriz covarianza
+
+```{r}
+df_pca_conv
+```
+
+Componente principales matriz correlacion
+
+
+```{r}
+df_pca_corr
+```
+
+
