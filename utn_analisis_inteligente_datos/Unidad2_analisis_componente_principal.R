@@ -33,3 +33,6 @@ df_pca_corr %>%
   scale_y_continuous(
     labels = scales::percent_format(),
     expand = expansion(mult = c(0, 0.01))) 
+
+
+

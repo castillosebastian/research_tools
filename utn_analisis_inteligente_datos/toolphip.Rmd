@@ -1,0 +1,75 @@
+---
+title: "Analisis_Correspondencia"
+author: "Área de Planificación Gestión y Estadística"
+date: "21/3/2022"
+output: html_document
+params:
+  nombre_dataset:
+    label: "Seleccione nombre data set:"
+    value: "ninguno"
+    input: select
+    choices: [practica1, nadadores,]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+# https://fhernanb.github.io/Manual-de-R/ph.html
+```
+
+# Prueba de Hipotesis o Prueba de Significancia
+
+Elementos de la prueba hipótesis    
+
+- Hipótesis nula: afirmación concreta sobre la forma de una distribución de probabilidad, sobre el valor de alguno de los parámetros de la distribución o sobre vínculo entre distribucion y parámetros. El nombre 'nula' sugiere 'sin consecuencias' en el conocimiento, es decir se mantiene el 'status quo' de lo que se sabe. Por eso la hipótesis nula tiene una presunción de validez, se asume que es verdadera y se procura evidencia en contra. La hipótesis nula no se prueba, sino que se rechaza o no se rechaza en base a datos empíricos. El criterio es falsacionista. Simboliza H0.   
+
+- Hipótesis alternativa: negación de la hipótesis nula. Simboliza H1.    
+
+- *Estadístico de prueba*: es un valor que se emplea para tomar la decisión sobre la H0, y se calcula convirtiendo el *estadístico muestral* ( proporción muestral, media muestral, desviación estandar, etc) en una puntuación bajo el supuesto de que H0 es verdadera.      
+
+
+- *Región crítica y valor Crítico*: es el conjunto de todos los valores del estadístico de prueba que determinan el rechazo de H0, por eso también se la llama región de rechazo. Valor critico: valor que separa región critica (rechaza H0) de los valores de prueba que no conducen al rechazo de h0.    
+
+
+- *Nivel de significancia*: (denotado por *'alfa'*) es la probabilidad de que el estadístico de prueba caiga en la región crítica cuando la H0 es verdadera. Si el estadístico de prueba cae en la región critica rechazamos H0, por eso *alfa* es la probabilidad de cometer el error de rechazar H0 cuando es verdadera (ERROR TIPO 1).    
+
+- *Valor p* o *p-values*: probabilidad de obtener un valor del estadístico de prueba que sea al menos tan extremo como el que representa a los datos muestrales, suponiendo H0 verdadera. H0 se debe rechazar si *p-vlue* es pequeño, tanto como 0.05 o menos.    
+
+- ERROR 1 = falso positivo = rechazamos la hipótesis nula VERDADERA = *alfa* es la probabilidad de E1   
+
+- ERROR 2 = falso negativo = no rechazamos la hipótesis nula FALSA = *beta* es la probabilidad de E2. La probabilidad de cometer un error de tipo II, β que depende de los siguientes factores: la hipotesis H1, el valor de α y el tamaño de la muestra.
+   
+- potencia de una prueba: *1 - beta* = probabilidad de rechazar un H0 falsa. Es decir, la potencia de una prueba de hipótesis es la probabilidad de sustentar una hipótesis alternativa que es verdadera.       
+
+
+Interaccion *alfa-beta*:   
+
+Para cualquier tamaño de muestra n fijo, un decremento en *alfa* causará un incremento en *beta*. Ala inversa, un incremento en *alfa* provocará un decremento en *beta*. Para disminuir tanto a como b, aumente el tamaño de la muestra.    
+
+# Para realizar la prueba  Chi2
+
+Para realizar la prueba Chi2 de Pearson se usa la función prop.test. 
+
+Ejemplo: 
+
+Un fabricante de un quitamanchas afirma que su producto quita 90% de todas las manchas. Para poner a prueba esta afirmación se toman 200 camisetas manchadas de las cuales a solo 174 les desapareció la mancha. Pruebe la afirmación del fabricante a un nivel  
+*alfa* = 0.05. En este problema interesa probar lo siguiente:   
+
+H0: p = 0.90
+H1: p < 0.90
+
+
+```{r}
+prop.test(x=174, n=200, p=0.90, alternative='less',
+          conf.level=0.95, correct=FALSE)
+
+
+```
+Como el valor-P es de 0.07865 es mayor que  *alfa* no se rechaza la hipótesis nula y se concluye que no hay evidencias suficientes para rechazar la hipótesis nula.  
+
+**Region Critica del Test de Chi cuadrado**
+
+En ambos casos se trata de un test con region de rechazo unilateral a la derecha; es decir, rechazamos H0 cuando los valores del estadıstico son grandes y no se pueden atribuir al azar las diferencias entre los valores observados y los esperados.
+
+La distribucion Chi cuadrado es asimetrica por la derecha y su forma depende de los grados de libertad. Debido a ello, la region crıtica variara en funcion de ellos y del nivel de significacion establecido para el contraste.
+
+

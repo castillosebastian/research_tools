@@ -1,4 +1,5 @@
 # Libraries
+library(dplyr)
 library(knitr)
 library(apgyeDSL)
 library(apgyeJusEROrganization)
@@ -32,4 +33,8 @@ library(htmltools)
 library(DataExplorer)
 #library(matlib)
 library(MASS)
-library(dplyr)
+library(broom)
+
+
+
+

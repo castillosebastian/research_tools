@@ -1,0 +1,121 @@
+---
+title: "respuestas_practicos_examenes"
+author: "Área de Planificación Gestión y Estadística"
+date: "1/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Practico Test de Pearson
+
+1) OK
+
+el p valor es pequeño
+las frecuencias esperadas son muy diferentes a las observadas
+el estadístico de contraste toma un valor muy grande
+todas las respuestas anteriores son correctas
+
+2) El test de Pearson no es válido si (VER CLASE 3, FILMINA 51): PRREGUNTA PROBLEMÁTICA. 
+alguna de las casillas tiene una frecuencia esperada igual o inferior a 1, 
+más del 20% de las casillas tienen frecuencias esperadas iguales o inferiores a 5, 
+alguna de las frecuencias observadas es igual o inferior a 1, 
+todas las afirmaciones son correctas, 
+sólo la primera y la segunda son correctas,    
+
+3) Se desea estudiar si existen diferencias en el cumplimiento del calendario de vacunación de los gatos según la zona de residencia. Para ello se toma una muestra de 100 gatos de cada una de tres localidades distintas del Gran Buenos Aires y se mira si tienen completa la vacunación o no. Qué test corresponde aplicar? *
+
+RESPUETA: test de homogeneidad de Pearson. Porque hay tre subpoblaciones y una variable categórica.  Ahora dudo porque una prueba de hipótesis sobre proporciones asumiendo como H0 p = > 0.3, también da una respuesta a la pregunta y no requiere nada más. 
+
+
+4) Dadas las siguientes dos afirmaciones: a) La prueba Chi Cuadrado de homogeneidad permite comparar una distribución de una variable en dos o más poblaciones.b) La prueba de independencia de Chi Cuadrado analiza si dos variables cuantitativas se asocian entre sí.
+
+Ninguna es correcta. la primera porque habla de poblaciones y no sub-poblaciones. y la segunda porque habla de variables cuantitaivas.
+
+
+5) Un investigador midió la forma en que se distribuían las visitas de los ratones a trampas tratadas previamente con orina de otros ratones. Los datos registradosse exhiben en la siguiente tabla:
+DUDO
+
+
+
+6) La diferencia entre las pruebas de independencia y homogeneidad radica en *
+el modo de calcular las frecuencias esperadas
+la cantidad de variables
+la cantidad de poblaciones
+la región de rechazo
+Sólo la segunda y la tercera son correctas: CORRECTA.
+
+# Análisis de Correspondencias
+
+1) Un análisis de correspondencias múltiples tiene sentido cuando: *
+las observaciones son independientes
+los perfiles fila no son paralelos
+los perfiles fila son paralelos
+las variables presentan asociación
+la segunda y la cuarta afimación son correctas: CORRECTA
+
+2) La distancia chi cuadrado se utiliza:
+para calcular la distancia entre perfiles fila
+porque posee la propiedad de equivalencia distribucional
+porque se vincula con la inercia
+todas las afirmaciones anteriores son correctas:
+sólo la primera y la segunda son correctas:  CORRECTA
+
+3) La inercia se define: *
+Como la suma de distancias euclideas de los perfiles fila al perfil fila medio
+Como la suma de distancias euclideas entre perfiles fila
+Como el cociente entre el estadístico Chi cuadrado y la cantidad de perfiles fila
+Como el cociente entre el estadístico Chi cuadrado y la cantidad de observaciones: CORRECTA
+Ninguna de las anteriores es correcta
+
+4) Los ejes del biplot simétrico indican
+Variables latentes CORRECTO
+Componentes principales
+Combinaciones lineales de los perfiles fila o columna
+Todas las anteriores son correctas: 
+
+5) Los perfiles cercanos al origen de coordenadas en el biplot simétrico corresponden a:
+Perfiles frecuentes
+Perfiles similares al perfil medio (CORRECTO)
+Perfiles raros
+Las dos primeras son correctas
+La segunda y la tercera son correctas
+
+
+6) Si un perfil fila aparece representado muy próximo a un perfil columna en un biplot simétrico, entonce: *
+esos perfiles son los dos raros o los dos comunes CORRECTA
+esos perfiles aparecen juntos con alta frecuencia
+las variables presentan asociación
+las tres afirmaciones son correctas CORRECTA
+Sólo la primer afirmación es correcta 
+OJO, me parece que esta pregunta tiene un problema de unica referencia.!! 
+
+# Primer Parcial Análisis Inteligente de Datos2018  
+
+
+1. Las variables son numéricas y están correlacionadas.CORRECTA
+2. p: CORRECTA
+3. Diagrama de dispersión.CORRECTO
+4. las variables están asociadas.CORRECTO
+5. Test de independencia. CORRECTO
+6. Chi cuadrado de Pearson. CORRECTO
+7. del rango intercuartil de la variable. MAL FORMULADO. DEBERIA DECIR LA FORMA DE DISTRIBUCION CONJUNTA.
+8. El desvı́o standard de la variabl. CORRECTO
+9.  Distancia entre perfiles .
+10. Como el cociente entre el estadı́stico Chi cuadrado y la cantidad de observaciones.
+
+Teorico 2
+
+2Parte Practica
+1.1. relacion variables: usa cinturon con Grave y Menor y condicion_conductor con grave menor y minima.
+1.2. Sì se cumplen.
+1.3. celda 1,1
+1.4. La aproximación Biplot de una matriz, sin supuestos sobre distribuciones probabilísticas subyacentes, proporciona gráficamente una representacion de los datos, mostrando asociación en los mismos, la variabilidad del conjunto de individuos y variables. Representacion simultánea de filas y columnas de la matriz.
+
+
+
+
+
+

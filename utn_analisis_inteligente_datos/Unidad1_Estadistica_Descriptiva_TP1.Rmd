@@ -9,7 +9,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = T, warning = F, message = F)
-source("intro.R")
+source("Unidad0_repos_and_tools.R")
 
 df <- list()
 df$IMCinfantil <- readxl::read_excel("~/research_tools/utn_analisis_inteligente_datos/IMCinfantil.xlsx")
@@ -103,7 +103,9 @@ datos <- datos %>%
 #### Ranking por candidatos por juez: no existe coincidencia en el primer puesto.
 
 ```{r}
-datos %>% group_by(juez, candidatos) %>% summarise(promedio = round(mean(valores), digits = 2)) %>% 
+datos %>% 
+  group_by(juez, candidatos) %>% 
+  summarise(promedio = round(mean(valores), digits = 2)) %>% 
   arrange(juez, desc(promedio)) %>% 
   kable()
 ```
@@ -157,11 +159,6 @@ matriz_correlacion <- datos_matriz %>%
 
 
 determinante <- det(matriz_covarianza)
-
-# traza = sum(diagonal matriz cuadrada). En el caso de la matriz de var-covar
-# la traza daría por resultado la suma de las varianzas y por lo tanto una idea 
-# de la magnitud del problema a explicar
-
 ```
 
 ```{r}
@@ -221,9 +218,12 @@ var() = el cuadrado de la sd()
 sqrt(round(sum((datos_matriz$cord - mean(datos_matriz$cord))^2) / 
           (length(datos_matriz$cord)-1), digits = 2))^2 # el cuadrado de la desviación típica
 ```
+
 # Covarianza 
 
 cov() = suma( var(x) * var (y)) / n-1 . Su producto expresa la dependencia lineal
+
+La matriz de covarianza es real, simétrica y de orden **p** por lo cual tiene **p** autovalores reales, con sus correspondientes autovectores. Además es semidefinida positiva lo que dice que sus autovalores son no negativos. 
 
 ```{r}
 
@@ -291,9 +291,11 @@ Graficamos las distancias de Mahalanobis y vemos outliers. Se destacan más dato
 boxplot(temp$mahalanobis, ylab = "Distancias de Mahalanobis")
 ```
 
+# Traza 
 
+traza = sum(diagonal matriz cuadrada). 
 
-
+En el caso de la matriz de var-covar la traza daría por resultado la **suma de las varianzas** y por lo tanto una idea de la magnitud del problema a explicar.  Por eso se asocia con el concepto de **variabilidad total**. 
 
 \pagebreak
 

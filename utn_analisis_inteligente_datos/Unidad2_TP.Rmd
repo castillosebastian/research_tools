@@ -1,0 +1,156 @@
+---
+title: "Analisis_componentes_Ppales"
+author: "Área de Planificación Gestión y Estadística"
+date: "21/3/2022"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+
+
+# Importar practica 1
+temp = as.integer(strsplit(as.character(c("3 1 1 1 3 1 1 1 5")), " ")[[1]])
+temp =  matrix(temp, nrow = 3, byrow = T)
+df = temp
+# Nadadores
+# df_raw <- readxl::read_excel("~/research_tools/utn_analisis_inteligente_datos/nadadores.xlsx")
+# df$practica3 <- df_raw %>% dplyr::select(-Nadador)  # quito columna nombre individuos
+# 
+# df$practica1 <- temp
+
+df <- readxl::read_excel("~/research_tools/utn_analisis_inteligente_datos/chalets.xlsx")
+
+```
+
+
+# Analisis componente principal
+
+
+# Importar a mano df
+
+```{r}
+
+kable(df)
+```
+
+# Importar definiendo df
+
+```{r}
+# df$practica2 <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol = 3, byrow = TRUE,
+#                dimnames = list(c("row1", "row2"),
+#                                c("C.1", "C.2", "C.3")))
+```
+# Importar leyendo
+
+```{r}
+
+# parametro para eliminar columna!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# df_raw <- readxl::read_excel("~/research_tools/utn_analisis_inteligente_datos/nadadores.xlsx")
+# df$practica3 <- df_raw %>% dplyr::select(-Nadador)  # quito columna nombre individuos
+
+```
+
+# Exploracion de datos
+
+```{r}
+skim(df)
+```
+```{r}
+df
+```
+
+
+
+# Analisis PCA
+
+# PCA con matriz de covarianza
+
+```{r}
+matriz_cov <- cov(df)
+```
+
+La función eigen() calcula ambos y los almacena en una lista bajo el nombre de vectors y values. Los eigenvalues se devuelven en orden decreciente y los eigenvectors (estandarizados) se ordenan de izquierda a derecha acorde a sus eigenvalues asociados.
+
+```{r}
+eigen(matriz_cov)
+```
+# Resultados con PRCOMP
+
+Aplicamos funciòn a nuestro df, 
+
+```{r}
+pca =  prcomp(df, center = TRUE, scale. = T)
+```
+
+Los elementos center y scale almacenados en el objeto pca contienen la media y desviación típica de las variables previa estandarización (en la escala original).
+
+```{r}
+pca$center
+```
+
+```{r}
+pca$scale
+```
+
+En *rotation* contiene el valor de los loadings ϕ para cada componente (vector propio, autovector o eigenvector). El número máximo de componentes principales se corresponde con el mínimo(n-1,p),
+
+```{r}
+pca$rotation
+```
+
+Analizar en detalle el vector de *loadings* que forma cada componente ayuda a determinar què informaciòn aporta cada una. Por ejemplo la primera componente es el resultado de la siguiente combinación lineal de las variables, en este caso los tramos de la carrera.
+
+La funciòn tambièn calcula automáticamente el valor de las componentes principales para cada observaciòn o individuo del data set (principal componente score) mediante la multiplicación de los datos con los loadings como sigue:  se tienen que multiplicar los eigenvectors transpuestos por los datos originales centrados y también transpuestos.
+
+```{r}
+pca$x
+```
+
+```{r}
+biplot(x = pca, scale = 0, cex = 0.6, col = c("blue4", "brown3"))
+```
+
+# Varianza explicada por las CP
+
+```{r}
+summary(pca)
+```
+
+Manualmente la varianza serìa
+
+```{r}
+pca$sdev^2
+```
+
+```{r}
+prop_varianza = pca$sdev^2 / sum(pca$sdev^2)
+
+ggplot(data = data.frame(prop_varianza, pc = 1:length(prop_varianza)),
+       aes(x = pc, y = prop_varianza)) +
+  geom_col(width = 0.3) +
+  geom_text(label = round(prop_varianza * 100, digits = 1)) +
+  scale_y_continuous(limits = c(0,1)) +
+  theme_bw() +
+  labs(x = "Componente principal",
+       y = "Prop. de varianza explicada")
+
+```
+
+
+```{r}
+prop_varianza_acum <- cumsum(prop_varianza)
+
+ggplot(data = data.frame(prop_varianza_acum, pc = 1:length(prop_varianza_acum)),
+       aes(x = pc, y = prop_varianza_acum, group = 1)) +
+  geom_point() +
+  geom_line() +
+  geom_text(label = round(prop_varianza_acum * 100, digits = 1), vjust =-.5) +
+  labs(x = "Componente principal",
+       y = "Prop. varianza explicada acumulada")
+
+```
+
+
+
