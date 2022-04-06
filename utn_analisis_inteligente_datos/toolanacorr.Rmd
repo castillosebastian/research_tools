@@ -1,0 +1,145 @@
+---
+title: "Analisis_Correspondencia"
+author: "Área de Planificación Gestión y Estadística"
+date: "21/3/2022"
+output: html_document
+params:
+  nombre_dataset:
+    label: "Seleccione nombre data set:"
+    value: "ninguno"
+    input: select
+    choices: [practica1, nadadores,]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+# library('FactoMineR')
+# bibliograf
+# https://rpubs.com/lucia_cabrera/610195
+
+```
+
+
+## Text exacto de Fisher
+
+Permite analizar si dos variables dicotómicas están asociadas cuando la muestra es demasiado pequeña y no se cumples los supuestos para aplicar Chi-Cuadrado. Matriz 2 * 2. 
+
+```{r}
+datos <- data.frame( sujeto = c("No alérgico", "No alérgico", "No alérgico",
+                                "No alérgico", "alérgico", "No alérgico",
+                                "No alérgico", "alérgico", "alérgico",
+                                "No alérgico", "alérgico", "alérgico",
+                                "alérgico", "alérgico", "alérgico",
+                                "No alérgico", "No alérgico", "No alérgico",
+                                "No alérgico", "alérgico", "alérgico",
+                                "alérgico", "alérgico", "No alérgico",
+                                "alérgico", "No alérgico", "No alérgico",
+                                "alérgico","alérgico", "alérgico"),
+                     mutacion = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE,
+                                  FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE,
+                                  TRUE, FALSE,  FALSE, TRUE, FALSE, TRUE, FALSE,
+                                  TRUE, FALSE,FALSE, FALSE, TRUE, FALSE, FALSE,
+                                  TRUE, FALSE, TRUE))
+
+
+tabla <- table(datos$sujeto, datos$mutacion, dnn = c("Sujeto", "Estado gen"))
+fisher.test(x = tabla, alternative = "two.sided")
+```
+```{r}
+library(vcd)
+assocstats(x = tabla)
+```
+
+## Analisis de Correspondencia Simple: test Chi-Cuadrado
+
+```{r}
+df <- tribble(
+  ~renta, ~bueno, ~malo, ~regular,
+  'Bajo', 75,40,35,
+  'Medio', 60,50,70,
+  'Alto', 20,40,30,
+  'Muy Alto', 15,40,25)
+
+df <- df %>% column_to_rownames(var = 'renta')
+```
+
+```{r}
+# Para graficarlo con % fila (perifles fila)
+df_prop = prop.table(as.matrix(df),margin=1) 
+df_prop
+```
+
+```{r}
+# Para graficarlo con % columna (perifles fila)
+df_prop = prop.table(as.matrix(df),margin=2) 
+df_prop
+```
+
+```{r}
+library(gplots)
+```
+
+```{r}
+# 1. convert the data as a table
+dt <- as.table(as.matrix(df))
+# 2. Graph
+balloonplot(t(dt), main ="Grafico", xlab ="", ylab="",
+            label = FALSE, show.margins = FALSE)
+```
+
+```{r}
+prueba <- chisq.test(df)
+
+```
+
+```{r}
+prueba
+```
+```{r}
+qchisq(0.95,6) # se obtienen el estadístico de contraste completando el nivel de no rechazo (1-alfa) y los grados de libertd
+```
+Es posible observar que el estadístico de prueba chi cuadrado cuyo valor es de 40.049 resulta ser mayor al estadístico de contraste (12.6) y, en este orden de ideas, existe suficiente evidencia estadística para rechazar la hipótesis nula y aceptar la alterna que indica presencia de asociaciones.
+
+
+```{r}
+# Observed counts
+prueba$observed
+```
+```{r}
+# Expected counts
+round(prueba$expected,2)
+```
+```{r}
+# Cells with the highest absolute standardized residuals contribute the most to the total Chi-square score.
+
+round(prueba$residuals, 3)
+```
+
+```{r}
+library(corrplot)
+corrplot(prueba$residuals, is.cor = FALSE)
+```
+
+```{r}
+# Contibution in percentage (%)
+contrib <- 100*prueba$residuals^2/prueba$statistic
+round(contrib, 3)
+```
+
+```{r}
+# Visualize the contribution
+corrplot(contrib, is.cor = FALSE)
+```
+```{r}
+# printing the p-value
+prueba$p.value
+```
+```{r}
+prueba$stdres
+```
+```{r}
+
+ACS <- CA(datos_billete_cien, graph = FALSE)
+
+```
+
