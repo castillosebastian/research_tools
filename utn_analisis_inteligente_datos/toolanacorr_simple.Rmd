@@ -1,0 +1,151 @@
+---
+title: "Analisis_Correspondencia"
+author: "Área de Planificación Gestión y Estadística"
+date: "21/3/2022"
+output: html_document
+params:
+  nombre_dataset:
+    label: "Seleccione nombre data set:"
+    value: "ninguno"
+    input: select
+    choices: [practica1, nadadores,]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+# library('FactoMineR')
+# bibliograf
+# https://rpubs.com/lucia_cabrera/610195
+# https://rpubs.com/pg2000in/ChiSqIndependence
+
+```
+
+## Analisis de Correspondencia Simple: test Chi-Cuadrado
+
+```{r}
+file_path <- "http://www.sthda.com/sthda/RDoc/data/housetasks.txt"
+housetasks <- read.delim(file_path, row.names = 1)
+head(housetasks)
+```
+
+```{r}
+# 1. convert the data as a table
+dt <- as.table(as.matrix(housetasks))
+# 2. Graph
+balloonplot(t(dt), main ="table", xlab ="", ylab="",
+            label = FALSE, show.margins = FALSE)
+```
+
+# mosaicplot
+
+Blue color indicates that the observed value is higher than the expected value if the data were random.    
+Red color specifies that the observed value is lower than the expected value if the data were random.    
+
+```{r}
+mosaicplot(dt,shade = T,main="Perfiles fila", las = 2)
+```
+
+
+```{r}
+mosaicplot(t(dt),shade = T,,main="Perfiles columna", las = 2)
+```
+# Chi cuadrado
+
+```{r}
+chisq <- chisq.test(dt)
+chisq
+```
+## Estadístico de contraste
+
+```{r}
+qchisq(0.95,36) # se obtienen el estadístico de contraste completando el nivel de no rechazo (1-alfa) y los grados de libertd
+```
+
+## Estadístico muestral vs Estadístico de Contraste
+
+Observar si el estadístico de prueba chi cuadrado resulta ser mayor al estadístico de contraste: si es asì existe suficiente evidencia estadística para rechazar la hipótesis nula.   
+
+```{r}
+if ( chisq$statistic > qchisq(0.95,chisq$parameter)){
+  'H0 debe rechazarse'
+} else{
+  'No hay evidencia para rechazar H0'
+}
+```
+
+# Datos del test
+
+```{r}
+chisq$observed
+```
+
+
+```{r}
+round(chisq$expected,2)
+```
+
+```{r}
+# Cells with the highest absolute standardized residuals contribute the most to the total Chi-square score.
+round(chisq$residuals, 3)
+```
+
+```{r}
+library(corrplot)
+corrplot(chisq$residuals, is.cor = FALSE)
+```
+
+```{r}
+# Contibution in percentage (%)
+contrib <- 100*chisq$residuals^2/chisq$statistic
+round(contrib, 3)
+```
+
+```{r}
+# Visualize the contribution
+corrplot(contrib, is.cor = FALSE)
+```
+
+# Analisis de Correspondencia Simple
+
+```{r}
+ACS <- CA(dt, graph = FALSE)
+```
+
+```{r}
+summary(ACS)
+```
+  
+
+```{r}
+# % de varianza explicado 
+valores_propios=ACS$eig; valores_propios
+```
+
+
+```{r}
+fviz_screeplot(ACS, addlabels = TRUE) +
+  ylab("Porcentaje de varianza explicado") + xlab("Ejes")
+```
+
+# Biplot simétrico
+
+```{r}
+#Representación simultánea
+fviz_ca_biplot(ACS, repel = TRUE)
+```
+
+# Inercia
+
+https://rpubs.com/kfhidalgoh/300863 
+
+```{r}
+row <- factoextra::get_ca_row(ACS)
+```
+
+```{r}
+row
+```
+
+```{r}
+row$inertia
+```

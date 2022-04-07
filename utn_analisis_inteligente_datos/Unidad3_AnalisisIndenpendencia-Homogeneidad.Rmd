@@ -1,0 +1,34 @@
+---
+title: "Analisis_componentes_Ppales"
+author: "Área de Planificación Gestión y Estadística"
+date: "21/3/2022"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+# https://rpubs.com/ercalel/593452
+# https://bookdown.org/jsalinas/tecnicas_multivariadas/acp.html
+```
+
+# Analisis Indenpendencia u Homogeneidad
+
+## Test Chi cuadrado de independencia
+
+En esta sección vamos a presentar un estadístico que cuantifica el apartamiento entre las
+frecuencias observadas y las frecuencias esperadas bajo la hipótesis nula que establece
+en este caso la independencia
+
+Si la hipótesis nula es verdadera, entonces la probabilidad
+de que un individuo sea clasificado en una celda es el producto de las correspondientes
+probabilidades marginales. Sin embargo, las probabilidades marginales son desconoci-
+das por lo cual se estiman con las proporciones marginales observadas.
+
+
+probabilidades esperadas / probabilidades observadas =  0 => independencia
+
+# Test Chi cuadrado de homogeneidad
+
+En esta sección, nos interesa estudiar si una variable aleatoria X sigue la misma dis-
+tribución en distintos subgrupos de una población de estudio. Estos subgrupos serán
+denominados en lo sucesivo como subpoblaciones. 

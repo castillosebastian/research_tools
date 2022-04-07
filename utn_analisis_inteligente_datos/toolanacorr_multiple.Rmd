@@ -20,10 +20,6 @@ source("Unidad0_repos_and_tools.R")
 ```
 
 
-## Text exacto de Fisher
-
-Permite analizar si dos variables dicotómicas están asociadas cuando la muestra es demasiado pequeña y no se cumples los supuestos para aplicar Chi-Cuadrado. Matriz 2 * 2. 
-
 ```{r}
 datos <- data.frame( sujeto = c("No alérgico", "No alérgico", "No alérgico",
                                 "No alérgico", "alérgico", "No alérgico",
@@ -98,6 +94,7 @@ prueba
 ```{r}
 qchisq(0.95,6) # se obtienen el estadístico de contraste completando el nivel de no rechazo (1-alfa) y los grados de libertd
 ```
+
 Es posible observar que el estadístico de prueba chi cuadrado cuyo valor es de 40.049 resulta ser mayor al estadístico de contraste (12.6) y, en este orden de ideas, existe suficiente evidencia estadística para rechazar la hipótesis nula y aceptar la alterna que indica presencia de asociaciones.
 
 
@@ -130,6 +127,7 @@ round(contrib, 3)
 # Visualize the contribution
 corrplot(contrib, is.cor = FALSE)
 ```
+
 ```{r}
 # printing the p-value
 prueba$p.value
@@ -137,6 +135,7 @@ prueba$p.value
 ```{r}
 prueba$stdres
 ```
+
 ```{r}
 
 ACS <- CA(datos_billete_cien, graph = FALSE)

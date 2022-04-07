@@ -115,6 +115,44 @@ Teorico 2
 1.4. La aproximación Biplot de una matriz, sin supuestos sobre distribuciones probabilísticas subyacentes, proporciona gráficamente una representacion de los datos, mostrando asociación en los mismos, la variabilidad del conjunto de individuos y variables. Representacion simultánea de filas y columnas de la matriz.
 
 
+# Borradores PCA
+## PCA con matriz de covarianza
+
+```{r}
+matriz_cov <- cov(df)
+```
+
+La función eigen() calcula ambos y los almacena en una lista bajo el nombre de vectors y values. Los eigenvalues se devuelven en orden decreciente y los eigenvectors (estandarizados) se ordenan de izquierda a derecha acorde a sus eigenvalues asociados.
+
+```{r}
+eigen(matriz_cov)
+```
+
+## Resultados con PRCOMP
+
+Aplicamos funciòn a nuestro df, 
+
+```{r}
+pca =  prcomp(df, center = TRUE, scale. = T)
+```
+
+Los elementos center y scale almacenados en el objeto pca contienen la media y desviación típica de las variables originales, previa estandarización (en la escala original).
+
+```{r}
+pca$center
+```
+
+```{r}
+pca$scale
+```
+
+La matriz “rotation” proporciona los loadings de los componentes principales (cada columna contiene el vector de loadings de cada componente principal). La función los denomina matriz de rotación ya que si multiplicáramos la matriz de datos por *$rotation*, obtendríamos las coordenadas de los datos en el nuevo sistema rotado de coordenadas. Estas coordenadas se corresponden con los scores de los componentes principales.    
+
+En *rotation* contiene el valor de los loadings ϕ para cada componente (vector propio, autovector o eigenvector). El número máximo de componentes principales se corresponde con el mínimo(n-1,p),
+
+```{r}
+pca$rotation
+```
 
 
 

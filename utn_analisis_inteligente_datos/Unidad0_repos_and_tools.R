@@ -32,6 +32,8 @@ library(MASS)
 library(broom)
 library(FactoMineR)
 library(factoextra)
+library(vcd)
+library(gplots)
 
 
 

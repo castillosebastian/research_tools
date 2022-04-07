@@ -45,6 +45,10 @@ Interaccion *alfa-beta*:
 
 Para cualquier tamaño de muestra n fijo, un decremento en *alfa* causará un incremento en *beta*. Ala inversa, un incremento en *alfa* provocará un decremento en *beta*. Para disminuir tanto a como b, aumente el tamaño de la muestra.    
 
+
+# Analisis de Correspondencia y Homogeneidad
+
+
 # Para realizar la prueba  Chi2
 
 Para realizar la prueba Chi2 de Pearson se usa la función prop.test. 

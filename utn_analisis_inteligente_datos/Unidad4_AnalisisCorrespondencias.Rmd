@@ -37,6 +37,11 @@ La particularidad de este análisis es que, por ejemplo, en un análisis por fil
 
 En cambio, supongamos que trabajamos con una matriz R, con frecuencias relativas **condicionadas** al total de la fila, de tal manera que el total marginal fila suma 1, obtendremos la distribuciòn de la variable en columnas condicionadas a la fila para todos los perfiles. En este caso, hay que destacar que es muy importante para obtener comparaciones razonables que el cotejo de las distancias entre los atributos evaluados tome en consideración la frecuencia relativa de aparición del atributo. Es decir, en atributos raros pequeñas diferencias absolutas puede ser equivalente a grandes distancias relativas comparadas con atributos más frecuentes. 
 
+## Perfil medio
+
+El concepto de perfil dado por un conjunto de frecuencias relativas, es fundamental para el análisis de correspondencias. Estos conjuntos de frecuencias relativas, también llamados vectores, tienen características geométricas especiales debido a que la suma de sus elementos es igual a 1 (lo que representa el 100%).
+
+
 ## Test Chi-Cuadrado de Indenpendencia (Pearson)
 
 Eventos Independientes: Diremos que dos eventos son independientes cuando la ocurrencia de uno de ellos no afecta la probabilidad de ocurrencia del otro. Formalmente: A y B son Independientes ⇔ P(A/B) = P(A).
@@ -51,9 +56,8 @@ knitr::include_graphics('test_chi-cuadrado.PNG')
 
 **Requisitos**
 
-Por todo esto este test solo es valido si todas las frecuencias esperadas son superiores a 1 y a lo sumo el 20% de las mismas inferior a 5.    
+Por todo esto este test solo es valido si todas las frecuencias esperadas son superiores a 1 y a lo sumo el 20% de las mismas inferior a 5. 
 
-Es importante tener en cuenta que cuando el número de observaciones esperadas para alguno de los niveles es igual o menor a 5 la aproximación por el test χ2 no es buena.   
 
 ## Test Chi-Cuadrado de homogeneidad
 
@@ -71,7 +75,7 @@ El perfil columma medio se obtiene como el cociente entre el total de las filas 
 
 **Inercia y Principio de equivalencia distribucional**
 
-La inercia total de la tabla de contingencia es la cuma de todas las distancias de los perfiles files al perfil fila medio, ponderadas por su importancia (cantidad de observaciones). Se calcula como el cociente entre el estadístico Chi-Cuadrado y el tamaño muestral. 
+La inercia total de la tabla de contingencia es la suma de todas las distancias de los perfiles files al perfil fila medio, ponderadas por su importancia (cantidad de observaciones). Se calcula como el cociente entre el estadístico Chi-Cuadrado y el tamaño muestral. 
 
 Respecto del ppio de ED esta propiedad es que si dos filas tienen la misma estructura relativa, fij /fi. y las unimos en una nueva fila única, las distancias entre las restantes filas permanecen invariables. 
 

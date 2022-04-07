@@ -46,7 +46,7 @@ Un eigenvalor > 1 indica que la componente principal explica más varianza de lo
 # Cantidad de componentes a utilizar en un análisis CP
 
 1. Porcentaje de variabilidad explicada: se define un % mínimo que se desea explicar y se eligen n variables hasta alcanzar ese valor.    
-2. Criterio de Laiser: consiste en retener las primeras m componentes cuyos autovalores resulten => 1, aunque algunos autores recomiendas 0.7
+2. Criterio de Kaiser: consiste en retener las primeras m componentes cuyos autovalores resulten => 1, aunque algunos autores recomiendas 0.7
 3. Criterio del bastón roto: a partir de un gráfico de sedimentación elegir m componentes hasta observar que la variabilidad explicada se estabiliza. Donde la pendiente se suaviza, el gradiente es menor que el segmento anterior.
 4. Prueba de Esfericidad: 
 
@@ -54,4 +54,9 @@ Un eigenvalor > 1 indica que la componente principal explica más varianza de lo
 # Estimación de CP a partir de datos poblacionales
 
 Hemos desarrollado la idea de CP sobre la base de la matriz de covarianza poblaciónal. Sin embargo, es matriz difícilmente se conozca, por eso trabajamos con la matriz muestral.
+
+# Loadings 
+
+Si la carga (coeficiente o loading) de una de las variables en la componente principal es positiva, significa que la variable y la componente tienen una correlación positiva. En este caso, el coseno del ángulo formado por la componente y la variable es positivo. Si la carga es positiva, un individuo que tenga una puntuación alta en esa variable tendrá valores más altos en esa componente que otro individuo que tiene un menor valor en esa variable y valores similares al primero en las restantes variables.
+
 
