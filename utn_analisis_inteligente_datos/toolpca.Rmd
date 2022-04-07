@@ -17,39 +17,31 @@ source("Unidad0_repos_and_tools.R")
 # https://rpubs.com/Cristina_Gil/PCA
 ```
 
-# Analisis componente principal
-
-# Importar a mano df
 
 ```{r}
-# Importar a mano pegando portapales
+# Importar a mano pegando portapales------------------------
 # df = as.integer(strsplit(as.character(c("3 1 1 1 3 1 1 1 5")), " ")[[1]])
 # df =  matrix(df, nrow = 3, byrow = T)
 # df
 
-```
-
-# Importar definiendo df
-
-```{r}
+# Importar definiendo df------------------------------------
 # df <- matrix(c(1,2,3, 11,12,13), nrow = 2, ncol = 3, byrow = TRUE,
 #                dimnames = list(c("row1", "row2"),
 #                                c("C.1", "C.2", "C.3")))
 # df
-```
-# Importar leyendo
 
-```{r}
-df_raw <- readxl::read_excel("nadadores.xlsx")
-df = df_raw %>% dplyr::select(-Nadador)  # quito columna nombre individuos
-df
+# Importar leyendo-------------------------------------------
+#df_raw <- readxl::read_excel("nadadores.xlsx")
+#df = df_raw %>% dplyr::select(-Nadador)  # quito columna nombre individuos
+df <- readxl::read_excel("aspirantes.xlsx") %>% dplyr::select(-ID)
+
 
 ```
 
 # Exploracion de datos
 
 ```{r}
-kable(head(df))
+head(df)
 ```
 
 ```{r}
@@ -58,23 +50,8 @@ skim(df)
 
 # Analisis PCA
 
-# PCA con matriz de covarianza
-
 ```{r}
-matriz_cov <- cov(df)
-```
-
-La función eigen() calcula ambos y los almacena en una lista bajo el nombre de vectors y values. Los eigenvalues se devuelven en orden decreciente y los eigenvectors (estandarizados) se ordenan de izquierda a derecha acorde a sus eigenvalues asociados.
-
-```{r}
-eigen(matriz_cov)
-```
-# Resultados con PRCOMP
-
-Aplicamos funciòn a nuestro df, 
-
-```{r}
-pca =  prcomp(df, center = TRUE, scale. = T)
+pca =  prcomp(df, center = TRUE, scale. = T) # trabajamos con la matriz correlacion
 ```
 
 Los elementos center y scale almacenados en el objeto pca contienen la media y desviación típica de las variables originales, previa estandarización (en la escala original).
@@ -87,13 +64,10 @@ pca$center
 pca$scale
 ```
 
-
-La matriz “rotation” proporciona los loadings de los componentes principales (cada columna contiene el vector de loadings de cada componente principal). La función los denomina matriz de rotación ya que si multiplicáramos la matriz de datos por *$rotation*, obtendríamos las coordenadas de los datos en el nuevo sistema rotado de coordenadas. Estas coordenadas se corresponden con los scores de los componentes principales.    
-
-En *rotation* contiene el valor de los loadings ϕ para cada componente (vector propio, autovector o eigenvector). El número máximo de componentes principales se corresponde con el mínimo(n-1,p),
+La matriz “rotation” proporciona los loadings de los componentes principales (cada columna contiene el vector de loadings de cada componente principal). La función los denomina matriz de rotación ya que si multiplicáramos la matriz de datos por *$rotation*, obtendríamos las coordenadas de los datos en el nuevo sistema rotado de coordenadas. Estas coordenadas se corresponden con los scores de los componentes principales.    En *rotation* contiene el valor de los loadings ϕ para cada componente (vector propio, autovector o eigenvector). El número máximo de componentes principales se corresponde con el mínimo(n-1,p),
 
 ```{r}
-pca$rotation
+pca$rotation %>% head()
 ```
 
 Cuando existe una alta correlación positiva entre todas las variables, el primer componente principal tiene todas sus coordenadas del mismo signo y puede interpretarse como un promedio ponderado de todas las variables, se interpreta como factor global de 'Tamaño'. Los restantes componentes se interpretan como factores ”de forma” y típicamente tienen coordenadas positivas y negativas, que implica que contraponen unos grupos de variables frente a otros. 
@@ -103,32 +77,42 @@ Analizar en detalle el vector de *loadings* que forma cada componente ayuda a de
 La funciòn tambièn calcula automáticamente el valor de las componentes principales para cada observaciòn o individuo del data set (principal componente score o simplemente scores) mediante la multiplicación de los datos con los loadings como sigue:  se tienen que multiplicar los eigenvectors transpuestos por los datos originales centrados y también transpuestos.
 
 ```{r}
-pca$x
+pca$x %>% head()
 ```
-# Varianza explicada por las CP
+
+## Varianza explicada por las CP
 
 La varianza explicada por cada componente principal (correspondiente a los eigenvalores) la obtenemos elevando al cuadrado la desviación estándar:  
 
--desviación estándar de cada componente principal:
+*desviación estándar de cada componente principal*
 
 ```{r}
 pca$sdev
 ```
-- Varianza
+
+*varianza*
 
 ```{r}
 pca$sdev^2
 ```
 
-O simplemente:
+A traves de summary accedemos a los datos de varición
 
 ```{r}
 summary(pca)
 ```
+
 Tener presente que los autovalores de esta matriz corresponden a la varianza de la componente y por lo tanto debe elevarse al cuadrado el desvío estandar (fila 1)
 
 
-# Graficos
+## Reprsentaciones Graficas: BIPLOT
+
+El biplot tiene la particularidad de facilitar:
+La interpretación de las distancias entre individuos en términos de similitud en relación a las variables consideradas.    
+La búsqueda de grupos o patrones.    
+La explicación de las componentes principales utilizando las correlaciones con las variables originales.    
+El estudio de las posiciones relativas de los individuos entre sí y respecto de las componentes principales graficadas.   
+
 
 ```{r}
 biplot(x = pca, scale = 0, cex = 0.6, col = c("blue4", "brown3"))
@@ -141,7 +125,7 @@ Longitud: cuanto mayor la longitud de un vector relacionado con x variable (en u
 
 Para los scores (observaciones), nos fijamos en los posibles agrupamientos. Puntuaciones próximas representan observaciones de similares características. Puntuaciones con valores de las variables próximas a la media se sitúan más cerca del centro del biplot (0, 0). El resto representan variabilidades normales o extremas (outliers). 
 
-# Otros gràficos
+## Proporciòn de Varianza Explicada
 
 ```{r}
 prop_varianza = pca$sdev^2 / sum(pca$sdev^2)
@@ -157,6 +141,7 @@ ggplot(data = data.frame(prop_varianza, pc = 1:length(prop_varianza)),
 
 ```
 
+## Proporcioan acumulada en las componentes
 
 ```{r}
 prop_varianza_acum <- cumsum(prop_varianza)
@@ -171,9 +156,8 @@ ggplot(data = data.frame(prop_varianza_acum, pc = 1:length(prop_varianza_acum)),
 
 ```
 
-
-
 # FactomineR
+
 ```{r}
 pca2.nci <- PCA(X = df, scale.unit = TRUE, ncp = 64, graph = FALSE)
 ```
@@ -182,10 +166,14 @@ pca2.nci <- PCA(X = df, scale.unit = TRUE, ncp = 64, graph = FALSE)
 print(pca2.nci)
 ```
 ```{r}
-head(pca2.nci$eig)
+pca2.nci$eig
 ```
 
- Como es de esperar, el eigenvalor (varianza explicada) es mayor en la primera componente que en las subsiguientes.
+Como es de esperar, el eigenvalor (varianza explicada) es mayor en la primera componente que en las subsiguientes.
+
+```{r}
+summary(pca2.nci)
+```
  
 # Representacion 
 
@@ -198,26 +186,40 @@ Se muestran dos ejemplos para representar las observaciones sobre las dos primer
 ```{r}
 fviz_pca_ind(pca2.nci, geom.ind = "point", 
              col.ind = "#FC4E07", 
-             axes = c(1, 2), 
+             axes = c(1, 2), # axes 1 y 2 se corresponden con PC1 y PC2, pudiendo escoger otros
              pointsize = 1.5) 
 ```
  
- # axes 1 y 2 se corresponden con PC1 y PC2, pudiendo escoger otros
- 
 # Representacion de Variables
+
 Para representar las variables sobre las dos primeras componentes principales podemos utilizar la función fviz_pca_var() del paquete factoextra. La correlación entre una variable y una componente principal se utiliza como la coordenada de dicha variable sobre la componente principal. De esta manera podemos obtener un gráfico de correlación de variables:
 
 ```{r}
-fviz_pca_var(pca2.nci, col.var = "cos2", 
-             geom.var = "arrow", 
-             labelsize = 2, 
-             repel = FALSE)
+fviz_pca_var(pca2.nci, col.var = "black",repel = TRUE)
 ```
 
-# Biplot
+Grafico muestra:
+- %varianza expliada por cada componente (dim1 y dim2)
 
 ```{r}
-biplot(pca, scale = 0, cex = 0.5, col = c("dodgerblue3", "deeppink3"))
+fviz_screeplot(pca2.nci, addlabels = TRUE)
+```
+
+# Contribuciones de las variables en los ejes
+las contribuciones a la inercia de los ejes sirven para detectar los variables mas relevantes en cada.
+
+```{r}
+var <- get_pca_var(pca2.nci)
+corrplot(var$cos2, is.corr=FALSE) 
 ```
  
- 
+# Conclusión
+
+- Considerando el criterio de Kaiser (más el ajuste derivado de las simulaciones de Montecarlo) que admite autovalores hasta 0.7, las componentes que se emplearían son: `r as.tibble(pca2.nci$eig) %>% mutate('comp' = str_c('comp', 1:nrow(.))) %>% filter(eigenvalue >= 0.7) %>% .$comp`.              
+
+- Considerando el criterio de variabilidad explicada del componente, eligiendo aquellas cuyo % de variabilidad no sea menor a 5%, las componentes que se emplearían son: `r as.tibble(pca2.nci$eig) %>% mutate('comp' = str_c('comp', 1:nrow(.))) %>% rename(ptje = 'percentage of variance') %>% filter(ptje > 5) %>% .$comp`.     
+
+
+
+
+
