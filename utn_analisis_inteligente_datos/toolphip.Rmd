@@ -48,6 +48,7 @@ Para cualquier tamaño de muestra n fijo, un decremento en *alfa* causará un in
 
 # Analisis de Correspondencia y Homogeneidad
 
+Presentaremos fundamentalmente el test Chi cuadrado, que es uno de los más conocidos para estudiar datos categóricos
 
 # Para realizar la prueba  Chi2
 
@@ -68,6 +69,7 @@ prop.test(x=174, n=200, p=0.90, alternative='less',
 
 
 ```
+
 Como el valor-P es de 0.07865 es mayor que  *alfa* no se rechaza la hipótesis nula y se concluye que no hay evidencias suficientes para rechazar la hipótesis nula.  
 
 **Region Critica del Test de Chi cuadrado**

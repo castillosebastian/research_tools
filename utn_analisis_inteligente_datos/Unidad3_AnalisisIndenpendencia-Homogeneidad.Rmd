@@ -32,3 +32,16 @@ probabilidades esperadas / probabilidades observadas =  0 => independencia
 En esta sección, nos interesa estudiar si una variable aleatoria X sigue la misma dis-
 tribución en distintos subgrupos de una población de estudio. Estos subgrupos serán
 denominados en lo sucesivo como subpoblaciones. 
+
+```{r}
+include_graphics('independencia_homogeneidad.png')
+```
+
+
+La distribución Chi cuadrado es asimétrica por la derecha y su forma depende de los
+grados de libertad (ver Figura 4.5). Debido a ello, la región crítica variará en función
+de los grados de libertad de la variable y del nivel de significación establecido para el
+contraste .
+
+
+
