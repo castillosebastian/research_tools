@@ -13,7 +13,8 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = T, warning = F, message = F)
 source("Unidad0_repos_and_tools.R")
-
+# Sources tools
+# https://rpubs.com/Cristina_Gil/PCA
 ```
 
 # Analisis componente principal
@@ -39,7 +40,7 @@ source("Unidad0_repos_and_tools.R")
 # Importar leyendo
 
 ```{r}
-df_raw <- readxl::read_excel("~/research_tools/utn_analisis_inteligente_datos/nadadores.xlsx")
+df_raw <- readxl::read_excel("nadadores.xlsx")
 df = df_raw %>% dplyr::select(-Nadador)  # quito columna nombre individuos
 df
 
@@ -172,4 +173,51 @@ ggplot(data = data.frame(prop_varianza_acum, pc = 1:length(prop_varianza_acum)),
 
 
 
+# FactomineR
+```{r}
+pca2.nci <- PCA(X = df, scale.unit = TRUE, ncp = 64, graph = FALSE)
+```
 
+```{r}
+print(pca2.nci)
+```
+```{r}
+head(pca2.nci$eig)
+```
+
+ Como es de esperar, el eigenvalor (varianza explicada) es mayor en la primera componente que en las subsiguientes.
+ 
+# Representacion 
+
+Cabe destacar que la representación gráfica de las observaciones y las variables es distinta: las observaciones se representan mediante sus proyecciones, mientras que las variables se representan mediante sus correlaciones. La correlación entre una componente y una variable estima la información que comparten -> loadings, por lo que las variables se pueden representar como puntos en el espacio de los componentes utilizando sus loadings como coordenadas.
+
+Observaciones
+Se muestran dos ejemplos para representar las observaciones sobre las dos primeras componentes principales:
+
+ 
+```{r}
+fviz_pca_ind(pca2.nci, geom.ind = "point", 
+             col.ind = "#FC4E07", 
+             axes = c(1, 2), 
+             pointsize = 1.5) 
+```
+ 
+ # axes 1 y 2 se corresponden con PC1 y PC2, pudiendo escoger otros
+ 
+# Representacion de Variables
+Para representar las variables sobre las dos primeras componentes principales podemos utilizar la función fviz_pca_var() del paquete factoextra. La correlación entre una variable y una componente principal se utiliza como la coordenada de dicha variable sobre la componente principal. De esta manera podemos obtener un gráfico de correlación de variables:
+
+```{r}
+fviz_pca_var(pca2.nci, col.var = "cos2", 
+             geom.var = "arrow", 
+             labelsize = 2, 
+             repel = FALSE)
+```
+
+# Biplot
+
+```{r}
+biplot(pca, scale = 0, cex = 0.5, col = c("dodgerblue3", "deeppink3"))
+```
+ 
+ 

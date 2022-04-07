@@ -1,9 +1,6 @@
 # Libraries
 library(dplyr)
 library(knitr)
-library(apgyeDSL)
-library(apgyeJusEROrganization)
-library(apgyeOperationsJusER)
 library(stringr)
 library(janitor)
 library(kableExtra)
@@ -15,7 +12,6 @@ library(RColorBrewer)
 library(colorRamps)
 library(lubridate)
 library(scales)
-library(apgyeProcesamiento)
 library(gghighlight)
 library(rlang)
 library(ggthemes)
@@ -34,6 +30,8 @@ library(DataExplorer)
 #library(matlib)
 library(MASS)
 library(broom)
+library(FactoMineR)
+library(factoextra)
 
 
 
