@@ -19,28 +19,77 @@ source("Unidad0_repos_and_tools.R")
 
 ```
 
-
-```{r}
-df <- readxl::read_xlsx("empresa.xlsx")
-
-```
-
-```{r}
-
-Pegar p.212
-
-```
-
-## Analisis de Correspondencia Multiples: test Chi-Cuadrado
-
+# Analisis de Correspondencia Multiples: test Chi-Cuadrado
 
 En base a matriz disyuntiva. Tantas columnas como niveles en medición en cada variable p.
 
-La matriz de Burt resulta del producto de la matriz disyuntiva y su traspuesta. Ello determina que es un matriz simétrica definida y positiva. La tabla de Burt es una yuxtaposición de las tablas de contingencia y está formada pro bloques. Cada bloque es una submatriz formada por tablas de contiengencia correspondientes a las variables tomadas dos en dos.
-
-
-SE APLICA TODO ACS!!!!!!!!!!!!!!!!!!!!!!!!!
+La matriz de Burt resulta del producto de la matriz disyuntiva y su traspuesta. Ello determina que es un matriz simétrica definida y positiva. La tabla de Burt es una yuxtaposición de las tablas de contingencia y está formada pro bloques. Cada bloque es una submatriz formada por tablas de contiengencia correspondientes a las variables tomadas dos en dos.    
 
 ```{r}
-
+df <- readxl::read_xlsx("empresa.xlsx")
 ```
+
+```{r}
+df <- df %>% 
+  mutate_all(as.factor)
+
+# Analisis decorrespondenciasmúltiple
+df.acm= MCA(df,quali.sup=1,graph=F)
+```
+
+```{r}
+summary(df.acm)
+```
+
+# Variaciòn o Inercia explicada
+
+
+
+```{r}
+fviz_screeplot(df.acm, addlabels = TRUE)
+```
+
+```{r}
+fviz_contrib(df.acm,choice="var",axes=1, fill="royalblue",color="black") +
+  theme_gray()
+```
+
+
+```{r}
+#Graficalascontribucionesdelasvariables
+fviz_contrib(df.acm,choice="ind",axes=1, top=5, fill="royalblue",color="black")+
+  theme_gray()
+
+#Graficalascontribucionesdelosindividuos
+```
+
+```{r}
+fviz_mca_var(df.acm,ggtheme = theme_minimal()) 
+```
+
+
+
+```{r}
+# Elegir variables para representar las elipses
+# variable_represent = names(df)[[2]]
+# 
+# fviz_mca_ind(df.acm,habillage=variable_represent,addEllipses=TRUE, repel=TRUE) +
+#   theme_gray() 
+
+#Realizaunagrupamientoporgénero
+#Calculalamatrizdisyuntiva
+#CalculalamatrizdeBurt
+# Calculalas inercias
+# Calculalas coordenadaspara representa r
+```
+
+```{r}
+mburt <- MCA(df, method = 'Burt')
+```
+
+
+```{r}
+summary(mburt)
+```
+
+
