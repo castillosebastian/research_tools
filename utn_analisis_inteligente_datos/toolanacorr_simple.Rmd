@@ -49,12 +49,19 @@ mosaicplot(dt,shade = T,main="Perfiles fila", las = 2)
 ```{r}
 mosaicplot(t(dt),shade = T,,main="Perfiles columna", las = 2)
 ```
+
 # Chi cuadrado
 
 ```{r}
 chisq <- chisq.test(dt)
 chisq
 ```
+
+## P value
+
+Agregar conversión notación científica!!!
+
+
 ## Estadístico de contraste
 
 ```{r}
@@ -83,6 +90,15 @@ chisq$observed
 ```{r}
 round(chisq$expected,2)
 ```
+
+# Residuos
+
+Rechada la hipótesis nula y confirmada la dependencia entre variables, la conclusion no indica en qué sentido están relacionadas. Nos debemos preguntar en qué nivel una de ellas se comporta distinto de lo esperado y en qué sentido. Los residuos nos ayudan con eso.
+
+Los residuos más utilizados son los residuos tipificados corregidos o ajustados. 
+
+*residuos > abs(2) = comportamiento no esperado*
+
 
 ```{r}
 # Cells with the highest absolute standardized residuals contribute the most to the total Chi-square score.
@@ -129,6 +145,10 @@ fviz_screeplot(ACS, addlabels = TRUE) +
 
 # Biplot simétrico
 
+- los perfiles fila/columna cercanos al origen muestran categorías similares al perfil medio,    
+- los ejes representan variables latentes,    
+- cada eje se indica el % de inercia que logra representar de los datos,    
+
 ```{r}
 #Representación simultánea
 fviz_ca_biplot(ACS, repel = TRUE)
@@ -149,3 +169,14 @@ row
 ```{r}
 row$inertia
 ```
+
+```{r}
+library('ca')
+atencion_ac <- ca(base, graph = F)
+summary(atencion_ac)
+
+
+```
+
+
+

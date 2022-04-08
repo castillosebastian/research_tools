@@ -70,12 +70,16 @@ knitr::include_graphics('independencia_homogeneidad.png')
 
 **Perfil medio**    
 
-
 El perfil columma medio se obtiene como el cociente entre el total de las filas y el total general. De esta manera se pueden comparar los perfiles columna con el perfil de columna medio
+
+De igual forma el perfil fila medio se obtiene dividiendo los totales de las columnas por el total general.
+
 
 **Inercia y Principio de equivalencia distribucional**
 
 La inercia total de la tabla de contingencia es la suma de todas las distancias de los perfiles files al perfil fila medio, ponderadas por su importancia (cantidad de observaciones). Se calcula como el cociente entre el estadístico Chi-Cuadrado y el tamaño muestral. 
+
+*X2 / n*
 
 Respecto del ppio de ED esta propiedad es que si dos filas tienen la misma estructura relativa, fij /fi. y las unimos en una nueva fila única, las distancias entre las restantes filas permanecen invariables. 
 
@@ -83,6 +87,11 @@ Respecto del ppio de ED esta propiedad es que si dos filas tienen la misma estru
 knitr::include_graphics('inercia_ppio_equivalencia_distribucional.png')
 ```
 
+## Bibplot Simétrico
+
+- los perfiles fila/columna cercanos al origen muestran categorías similares al perfil medio,    
+- los ejes representan variables latentes,    
+- cada eje se indica el % de inercia que logra representar de los datos,  
 
 ## Text exacto de Fisher
 

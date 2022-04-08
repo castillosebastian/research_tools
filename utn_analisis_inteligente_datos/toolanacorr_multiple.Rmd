@@ -21,42 +21,28 @@ source("Unidad0_repos_and_tools.R")
 
 
 ```{r}
-datos <- data.frame( sujeto = c("No alérgico", "No alérgico", "No alérgico",
-                                "No alérgico", "alérgico", "No alérgico",
-                                "No alérgico", "alérgico", "alérgico",
-                                "No alérgico", "alérgico", "alérgico",
-                                "alérgico", "alérgico", "alérgico",
-                                "No alérgico", "No alérgico", "No alérgico",
-                                "No alérgico", "alérgico", "alérgico",
-                                "alérgico", "alérgico", "No alérgico",
-                                "alérgico", "No alérgico", "No alérgico",
-                                "alérgico","alérgico", "alérgico"),
-                     mutacion = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE,
-                                  FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE,
-                                  TRUE, FALSE,  FALSE, TRUE, FALSE, TRUE, FALSE,
-                                  TRUE, FALSE,FALSE, FALSE, TRUE, FALSE, FALSE,
-                                  TRUE, FALSE, TRUE))
+df <- readxl::read_xlsx("empresa.xlsx")
 
-
-tabla <- table(datos$sujeto, datos$mutacion, dnn = c("Sujeto", "Estado gen"))
-fisher.test(x = tabla, alternative = "two.sided")
-```
-```{r}
-library(vcd)
-assocstats(x = tabla)
 ```
 
-## Analisis de Correspondencia Simple: test Chi-Cuadrado
+```{r}
+
+Pegar p.212
+
+```
+
+## Analisis de Correspondencia Multiples: test Chi-Cuadrado
+
+
+En base a matriz disyuntiva. Tantas columnas como niveles en medición en cada variable p.
+
+La matriz de Burt resulta del producto de la matriz disyuntiva y su traspuesta. Ello determina que es un matriz simétrica definida y positiva. La tabla de Burt es una yuxtaposición de las tablas de contingencia y está formada pro bloques. Cada bloque es una submatriz formada por tablas de contiengencia correspondientes a las variables tomadas dos en dos.
+
+
+SE APLICA TODO ACS!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ```{r}
-df <- tribble(
-  ~renta, ~bueno, ~malo, ~regular,
-  'Bajo', 75,40,35,
-  'Medio', 60,50,70,
-  'Alto', 20,40,30,
-  'Muy Alto', 15,40,25)
 
-df <- df %>% column_to_rownames(var = 'renta')
 ```
 
 ```{r}
