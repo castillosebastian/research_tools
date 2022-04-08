@@ -43,8 +43,6 @@ summary(df.acm)
 
 # Variaciòn o Inercia explicada
 
-
-
 ```{r}
 fviz_screeplot(df.acm, addlabels = TRUE)
 ```
