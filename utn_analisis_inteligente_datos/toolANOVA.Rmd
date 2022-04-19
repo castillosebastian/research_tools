@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = T, warning = F, message = F)
 source("Unidad0_repos_and_tools.R")
 # library('FactoMineR')
 # bibliograf
-# https://rpubs.com/Miguel_Tripp/anova
+# https://rpubs.com/Miguel_Tripp/anova ACA
 # https://www.cienciadedatos.net/documentos/19_anova.html
 # https://www.cienciadedatos.net/documentos/9_homogeneidad_de_varianza_homocedasticidad.html
 #https://fhernanb.github.io/Manual-de-R/ph.html#prueba-de-hip%C3%B3tesis-para-la-varianza-sigma2-de-una-poblaci%C3%B3n-normal
