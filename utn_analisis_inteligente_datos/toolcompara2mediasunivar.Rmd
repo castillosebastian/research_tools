@@ -18,6 +18,12 @@ source("Unidad0_repos_and_tools.R")
 # https://rpubs.com/lucia_cabrera/610195
 # https://rpubs.com/pg2000in/ChiSqIndependence
 
+# shiny
+# https://antoinesoetewey.shinyapps.io/statistics-201/
+
+
+
+
 ```
 
 # Comparación de dos medias univariadas (varianza conocida)
