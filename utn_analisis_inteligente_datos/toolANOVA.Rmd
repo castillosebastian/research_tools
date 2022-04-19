@@ -1,0 +1,89 @@
+---
+title: "Analisis_Correspondencia Simple"
+author: "Área de Planificación Gestión y Estadística"
+date: "21/3/2022"
+output: html_document
+params:
+  nombre_dataset:
+    label: "Seleccione nombre data set:"
+    value: "ninguno"
+    input: select
+    choices: [practica1, nadadores,]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+# library('FactoMineR')
+# bibliograf
+# https://rpubs.com/Miguel_Tripp/anova
+# https://www.cienciadedatos.net/documentos/19_anova.html
+# https://www.cienciadedatos.net/documentos/9_homogeneidad_de_varianza_homocedasticidad.html
+#https://fhernanb.github.io/Manual-de-R/ph.html#prueba-de-hip%C3%B3tesis-para-la-varianza-sigma2-de-una-poblaci%C3%B3n-normal
+
+
+```
+
+# ANOVA
+
+Análisis de las medias de dos o más grupos.
+
+**H0:** las medias son iguales entre los grupos . Bajo la hipótesis nula de que las observaciones de los distintos grupos proceden todas de la misma población (tienen la misma media y varianza), la varianza ponderada entre grupos será la misma que la varianza promedio dentro de los grupos.
+**H1:** al menos dos medias son distintas del resto
+
+```{r}
+df <- read_csv("causas_iniciadas_camara.csv") %>% 
+  mutate(organo = str_c(circunscripcion, "-", organismo),
+         causas_iniciadas = ingresa) %>% 
+  dplyr::select(organo, circunscripcion, fecha, causas_iniciadas)
+```
+
+## Boxplot para ver distribución de datos
+
+- Identificar asimetrías(sesgo a uno de los lados)     
+- Datos atipicos       
+- Diferencia de varianzas   
+- Homocedasticidad   
+
+```{r}
+df %>% 
+  ggplot(aes(x = organo, y = causas_iniciadas, color = circunscripcion)) +
+  geom_boxplot() +
+  theme_bw() +
+  coord_flip()
+```
+
+## Curva de densidad para ver distribución de datos
+
+```{r}
+df %>% 
+  ggplot(aes(x=causas_iniciadas, color=circunscripcion)) +
+  geom_density() +
+  facet_wrap(organo ~ .) # +
+  #theme(legend.position = 'none')
+```
+
+## Probar si los datos siguen una distribución normal utilizando qqplots
+
+Si se tuviese una muestra distribuída perfectamente normal, se esperaría que los puntos estuviesen perfectamente alineados con la línea de referencia, sin embargo, las muestran con las que se trabajan en la práctica casi nunca presentan este comportamiento aún si fueron obtenidas de una población normal. En la práctica se aceptan alejamientos del patrón lineal para aceptar que los datos si provienen de una población normal.
+
+
+```{r}
+df %>% 
+  ggplot(aes(sample = causas_iniciadas, colour = circunscripcion))+
+  stat_qq(show.legend = F)+
+  stat_qq_line()+
+  facet_wrap(.~ organo)
+```
+
+## Test de homocedasticidad
+
+Si se tiene seguridad de que las muestras a comparar proceden de poblaciones que siguen una distribución normal, son recomendables el F-test y el test de Bartlet, pareciendo ser el segundo más recomendable ya que el primero es muy potente pero extremadamente sensible a desviaciones de la normal. Si no se tiene la seguridad de que las poblaciones de origen son normales, se recomiendan el test de Leven utilizando la mediana.
+
+```{r}
+bartlett.test(df$causas_iniciadas ~ df$organo)
+```
+
+```{r}
+leveneTest(y = df$causas_iniciadas, group = df$organo, center = 'median')
+```
+

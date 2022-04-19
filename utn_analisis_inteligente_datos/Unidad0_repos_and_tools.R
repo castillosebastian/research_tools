@@ -34,6 +34,7 @@ library(FactoMineR)
 library(factoextra)
 library(vcd)
 library(gplots)
+library(car)
 
 
 

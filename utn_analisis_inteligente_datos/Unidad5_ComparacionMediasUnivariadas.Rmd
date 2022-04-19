@@ -1,0 +1,84 @@
+---
+title: "Analisis_Correspondencia"
+author: 'Claudio Sebastián Castillo'
+date: "21/3/2022"
+output: html_document
+params:
+  nombre_dataset:
+    label: "Seleccione nombre data set:"
+    value: "ninguno"
+    input: select
+    choices: [practica1, nadadores,]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+
+```
+
+# Comparación de medias en el caso univariado
+
+Vamos a analizar la deferencia de medias de dos poblaciones normales para dos muestras independientes.
+
+Supuesto: **Normalidad**
+
+# Pruebas Paramétricas
+
+## Primer caso: Muestras normales independientes con varianzas conocidas   
+## Segundo caso: Muestras normales independientes con varianzas desconocidas   
+## Tercar caso: muestras independientes de poblaciones cualquiera
+### Transformaciones Box & Cox (para normalizar los datos cuando no se satisface supuesto de normalidad)
+### Transformaciones Jhonson (para normalizar los datos cuando no se satisface supuesto de normalidad)
+## Cuarto caso: Muestras apareadas. Las muestras no son independientes.
+
+### Intervalo de confianza   
+
+Interpretaciòn correcta: De cada 100 intervalos construidos a partir de muestras de igual tamaño, alrededor de 95 contendrán el valor verdadero del parámetro.  Se debe in-
+terpretar que con una confianza del 95%, que el intervalo [0.21, 1.47] contiene al verdadero valor de la diferencia entre las medias de pH de las Regiones A y B.  Se puede observar siempre que se presenten ambos extremos del intervalo positivos, el cero no pertenece al intervalo. Entonces el test basado en el intervalo de confianza rechaza la hipótesis de igualdad entre las medias.    
+   
+# Pruebas no paramétricas
+
+Existen alaternativas no paramétricas o de libre distribución para lo casos en que el supuesto de normalidad no se satisface. 
+
+## Test de rangos
+
+Se aplica cuando: 
+- Si los datos no son numéricos y corresponden a categorías ordinales, los rangos contienen la misma información que los datos.    
+- Si la variable es numérica, su distribución no es Normal y la muestra es pequeña, no valen los tests que hemos presentado anteriormente.  
+
+## Test de Mann-Whitney-Wilcoxon
+
+Dos modelos para testear diferentes hipótesis sobre las poblaciones de donde provienen los datos.    
+
+-Modelo 1: muestras provienen de poblaciones con la misma distribución F , pero no es necesario especificar cuál es esta distribución.    
+-Modelo 2: se desconoce la distribucón, luego se asume que son distitnas, y se prueba la hipótesis 0 de que ambas distribuciones son iguales. 
+
+Estadístico de contraste: T = suma de los rangos de la muestra con menor número de observaciones.
+
+## Test de la mediana
+
+Puede generalizarse a más de dos grupos y resulta ser una alternativa al test de Mann-Whitney-Wilcoxon cuando interesa un test para el parámetro de posición.   
+Puede aplicarse sin que se cumpla el supuesto de igualdad distribucional de las dos poblaciones.     
+uede ser usado con datos numéricos u ordinales.     
+
+## Comparacion de Varios Grupos: ANOVA
+
+Comparación de las medias de tres o más poblaciones independientes con distribuciones normales de igual varianza.
+
+Las variables aleatorias observadas son normales, independientes entre sí dentro de las muestras y entre las muestras y homocedásticas. Ello significa que sus varianzas son iguales. 
+
+**Homosedasticidad**: variacion igual o constante entre las poblaciones.    
+
+Este es un supuesto bastante fuerte que, en caso de no satisfacerse, se deberá realizar una transformación de los datos o aplicar técnicas no paramétricas en la cuales no se supongan homocedasticidad ni normalidad.    
+
+La distribución de este estadístico es F -Fisher Snedecor, por ser un cociente de variables aleatorias con distribución Chi cuadrado normalizadas por sus respectivos grados de libertad.   
+
+### Analicemos en primera instancia el supuesto de homocedasticidad
+
+**Test de Bartlett** 
+
+
+
+
+
+

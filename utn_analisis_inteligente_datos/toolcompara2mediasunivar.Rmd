@@ -1,0 +1,27 @@
+---
+title: "Analisis_Correspondencia Simple"
+author: "Área de Planificación Gestión y Estadística"
+date: "21/3/2022"
+output: html_document
+params:
+  nombre_dataset:
+    label: "Seleccione nombre data set:"
+    value: "ninguno"
+    input: select
+    choices: [practica1, nadadores,]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+# library('FactoMineR')
+# bibliograf
+# https://rpubs.com/lucia_cabrera/610195
+# https://rpubs.com/pg2000in/ChiSqIndependence
+
+```
+
+# Comparación de dos medias univariadas (varianza conocida)
+
+
+
+# 

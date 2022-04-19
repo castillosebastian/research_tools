@@ -1,5 +1,5 @@
 ---
-title: "Analisis_Correspondencia"
+title: "Analisis_Correspondencia_Multiple"
 author: "Área de Planificación Gestión y Estadística"
 date: "21/3/2022"
 output: html_document
@@ -34,7 +34,7 @@ df <- df %>%
   mutate_all(as.factor)
 
 # Analisis decorrespondenciasmúltiple
-df.acm= MCA(df,quali.sup=1,graph=F)
+df.acm= MCA(df, quali.sup=1,graph=F)
 ```
 
 ```{r}
@@ -62,7 +62,7 @@ fviz_contrib(df.acm,choice="ind",axes=1, top=5, fill="royalblue",color="black")+
 ```
 
 ```{r}
-fviz_mca_var(df.acm,ggtheme = theme_minimal()) 
+fviz_mca_var(df.acm,ggtheme = theme_minimal(), repel = T) 
 ```
 
 
@@ -82,12 +82,23 @@ fviz_mca_var(df.acm,ggtheme = theme_minimal())
 ```
 
 ```{r}
-mburt <- MCA(df, method = 'Burt')
+ACM <- MCA(df, method = 'Burt')
 ```
 
 
 ```{r}
-summary(mburt)
+summary(ACM)
 ```
 
+```{r}
+corrplot::corrplot(ACM$var$eta2, is.corr=FALSE,  method=c("color"),addCoef.col = "black")
+```
+
+
+# TODO
+
+```{r}
+# Analisis de correspondencia multiple muy completo con aplicación exploratoria fundada. muy Bueno!
+# https://rpubs.com/Ulises3/DatosActuaria
+```
 

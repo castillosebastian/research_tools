@@ -1,6 +1,6 @@
 ---
 title: "Analisis_Correspondencia"
-author: "Área de Planificación Gestión y Estadística"
+author: 'Claudio Sebastián Castillo'
 date: "21/3/2022"
 output: html_document
 params:
@@ -23,7 +23,6 @@ source("Unidad0_repos_and_tools.R")
 - Contraste de Homegenidad
 + Múltiples (más de dos variables)
 
-
 El análisis de correspondencias es una técnica descriptiva para representar tablas de contingencia, es decir, tablas donde recogemos las frecuencias de aparición de dos o más variables cualitativas en un conjunto de elementos. Constituye el equivalente de componentes principales y coordenadas principales para variables cualitativas.     
 
 El análisis de correspondencia es una forma de resumir la información de una tabla de contigencia. Puede ser vista como una manera de representar las variables en un espacio de dimensión menor, de forma análoga a componentes principales, pero definiendo la distancia entre los puntos de manera coherente con la interpretación de los datos. En lugar de utilizar la distancia euclídea utilizamos la distancia chi-cuadrado, para poder apreciar los patrones de asociación.
@@ -37,9 +36,15 @@ La particularidad de este análisis es que, por ejemplo, en un análisis por fil
 
 En cambio, supongamos que trabajamos con una matriz R, con frecuencias relativas **condicionadas** al total de la fila, de tal manera que el total marginal fila suma 1, obtendremos la distribuciòn de la variable en columnas condicionadas a la fila para todos los perfiles. En este caso, hay que destacar que es muy importante para obtener comparaciones razonables que el cotejo de las distancias entre los atributos evaluados tome en consideración la frecuencia relativa de aparición del atributo. Es decir, en atributos raros pequeñas diferencias absolutas puede ser equivalente a grandes distancias relativas comparadas con atributos más frecuentes. 
 
-## Perfil medio
+## Perfil medio ('el marginal')
 
 El concepto de perfil dado por un conjunto de frecuencias relativas, es fundamental para el análisis de correspondencias. Estos conjuntos de frecuencias relativas, también llamados vectores, tienen características geométricas especiales debido a que la suma de sus elementos es igual a 1 (lo que representa el 100%).
+
+## Residuos
+
+Los residuos son las diferencias entre la frecuencia observada y la frecuencia esperada en cada casilla: ij ij ij r =n −e . En el caso de que el contraste de 2 χ haya resultado significativo, estos residuos indicarán qué casillas contribuyen en mayor grado al valor del estadístico.       
+Cuanto mayor sea el valor de los residuos mayor es la probabilidad de que una determinada combinación de valores de las variables, esto es, una casilla, sea significativa.    
+Para que el análisis de los residuos resulte adecuado es necesario que previamente éstos hayan sido ajustados y estandarizados, para lo cual se suele aplicar la fórmula propuesta por Haberman (1978), que consiste en dividir el valor del residuo en cada casilla por su error típico.    
 
 
 ## Test Chi-Cuadrado de Indenpendencia (Pearson)
@@ -56,7 +61,7 @@ knitr::include_graphics('test_chi-cuadrado.PNG')
 
 **Requisitos**
 
-Por todo esto este test solo es valido si todas las frecuencias esperadas son superiores a 1 y a lo sumo el 20% de las mismas inferior a 5. 
+Por todo esto este test solo es valido si todas las *frecuencias esperadas* son superiores a 1 y a lo sumo el 20% de las mismas inferior a 5. (mas del 80% superior a 5)
 
 
 ## Test Chi-Cuadrado de homogeneidad
@@ -80,6 +85,10 @@ De igual forma el perfil fila medio se obtiene dividiendo los totales de las col
 La inercia total de la tabla de contingencia es la suma de todas las distancias de los perfiles files al perfil fila medio, ponderadas por su importancia (cantidad de observaciones). Se calcula como el cociente entre el estadístico Chi-Cuadrado y el tamaño muestral. 
 
 *X2 / n*
+
+La inercia también puede ser vista como:Suma de Autovalores (o Traza).
+
+En cualquier caso la inercia siempre es una medida de variabilidad, mostrando la distancia entre los perfiles y el perfil medio (sea fila o columna).
 
 Respecto del ppio de ED esta propiedad es que si dos filas tienen la misma estructura relativa, fij /fi. y las unimos en una nueva fila única, las distancias entre las restantes filas permanecen invariables. 
 
@@ -125,4 +134,8 @@ assocstats(x = tabla)
 
 ## Analisis de Correspondencia Múltiple
 
-Similar al AC simple, pero empleando una matriz disyuntiva o matris de Burt. La matriz de Burt resulta del producto entre la matriz disyuntiva completa y su traspuesta. Implica que la MB es una matriz simétrica, definida positiva (como la de covarianza).
+Similar al AC simple, pero empleando una matriz disyuntiva. La matriz de Burt resulta del producto entre la matriz disyuntiva completa y su traspuesta. Implica que la MB es una matriz simétrica, definida positiva (como la de covarianza). 
+
+La matriz de Burt se construye por superposición de cajas. En los bloques diagonales aparecen matrices diagonales conteniendo las frecuencias marginales de cada una de las variables analizadas.Fuera de la diagonal aparecen las tablas de frecuencias cruzadas correspondientes a todas las combinaciones 2 a 2 de las variables analizadas.    
+
+La matriz de Burt resulta del producto de la matriz disyuntiva y su traspuesta. Ello determina que es un matriz simétrica definida y positiva. La tabla de Burt es una yuxtaposición de las tablas de contingencia y está formada pro bloques. Cada bloque es una submatriz formada por tablas de contiengencia correspondientes a las variables tomadas dos en dos.  

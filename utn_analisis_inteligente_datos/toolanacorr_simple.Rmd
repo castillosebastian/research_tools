@@ -1,5 +1,5 @@
 ---
-title: "Analisis_Correspondencia"
+title: "Analisis_Correspondencia Simple"
 author: "Área de Planificación Gestión y Estadística"
 date: "21/3/2022"
 output: html_document
@@ -99,7 +99,6 @@ Los residuos más utilizados son los residuos tipificados corregidos o ajustados
 
 *residuos > abs(2) = comportamiento no esperado*
 
-
 ```{r}
 # Cells with the highest absolute standardized residuals contribute the most to the total Chi-square score.
 round(chisq$residuals, 3)
@@ -143,11 +142,13 @@ fviz_screeplot(ACS, addlabels = TRUE) +
   ylab("Porcentaje de varianza explicado") + xlab("Ejes")
 ```
 
-# Biplot simétrico
+# Biplot simétrico (tb Mapa Perceptual)
 
 - los perfiles fila/columna cercanos al origen muestran categorías similares al perfil medio,    
 - los ejes representan variables latentes,    
 - cada eje se indica el % de inercia que logra representar de los datos,    
+-  las filas de estructuras similares aparecen próximas y las de estructuras diferentesn alejadas
+- los puntos que representan los perfiles están calculados por los scores de la distancia chi-cuadrado
 
 ```{r}
 #Representación simultánea
@@ -172,10 +173,8 @@ row$inertia
 
 ```{r}
 library('ca')
-atencion_ac <- ca(base, graph = F)
+atencion_ac <- ca(dt, graph = F)
 summary(atencion_ac)
-
-
 ```
 
 
