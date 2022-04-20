@@ -1,5 +1,5 @@
 ---
-title: "Anova"
+title: "Analisis_Correspondencia Simple"
 author: "Área de Planificación Gestión y Estadística"
 date: "21/3/2022"
 output: html_document
@@ -19,15 +19,9 @@ source("Unidad0_repos_and_tools.R")
 # https://www.cienciadedatos.net/documentos/19_anova.html
 # https://www.cienciadedatos.net/documentos/9_homogeneidad_de_varianza_homocedasticidad.html
 #https://fhernanb.github.io/Manual-de-R/ph.html#prueba-de-hip%C3%B3tesis-para-la-varianza-sigma2-de-una-poblaci%C3%B3n-normal
-```
-
-```{r}
-
-db_name = params$nombre_dataset
 
 
 ```
-
 
 # ANOVA
 
@@ -37,7 +31,6 @@ Análisis de las medias de dos o más grupos.
 **H1:** al menos dos medias son distintas del resto
 
 Requisitos:   
-
 - distribuciones normales
 - independientes entre si, y 
 - igual varianza (homosedásticas)
@@ -45,7 +38,10 @@ Requisitos:
 Si los supuestos no se satisface se pueden aplicar trasnformaciones para intentar aproximarnos a la normalidad en la distribución de los datos o bien aplicar técnicas no paramétricas que no tengan aquellos supuestos.  
 
 ```{r}
-
+df <- read_csv("causas_iniciadas_camara.csv") %>% 
+  mutate(organo = str_c(circunscripcion, "-", organismo),
+         causas_iniciadas = ingresa) %>% 
+  dplyr::select(organo, circunscripcion, fecha, causas_iniciadas)
 ```
 
 ```{r}
