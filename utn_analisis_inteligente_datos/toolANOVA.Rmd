@@ -25,165 +25,177 @@ source("Unidad0_repos_and_tools.R")
 
 db_name = params$nombre_dataset
 
-
+  
 ```
 
-
-# ANOVA
-
-Análisis de las medias de dos o más grupos.
-
-**H0:** las medias son iguales entre los grupos . Bajo la hipótesis nula de que las observaciones de los distintos grupos proceden todas de la misma población (tienen la misma media y varianza), la varianza ponderada entre grupos será la misma que la varianza promedio dentro de los grupos.
-**H1:** al menos dos medias son distintas del resto
-
-Requisitos:   
-
-- distribuciones normales
-- independientes entre si, y 
-- igual varianza (homosedásticas)
-
-Si los supuestos no se satisface se pueden aplicar trasnformaciones para intentar aproximarnos a la normalidad en la distribución de los datos o bien aplicar técnicas no paramétricas que no tengan aquellos supuestos.  
-
 ```{r}
+dir = "~/research_tools/utn_analisis_inteligente_datos/"
+f = glue::glue(dir, db_name)
+df_raw <- readxl::read_excel(f)
+
 
 ```
 
 ```{r}
-str(df)
+str(df_raw)
 ```
 
 
-## Anova
+<!-- # ANOVA -->
 
-```{r}
-df_anova = aov(data = df, causas_iniciadas ~ organo )
-```
+<!-- Análisis de las medias de dos o más grupos. -->
 
-```{r}
-summary(df_anova)
-```
+<!-- **H0:** las medias son iguales entre los grupos . Bajo la hipótesis nula de que las observaciones de los distintos grupos proceden todas de la misma población (tienen la misma media y varianza), la varianza ponderada entre grupos será la misma que la varianza promedio dentro de los grupos. -->
+<!-- **H1:** al menos dos medias son distintas del resto -->
 
-Considerando los resultados debemos rechazar la igualdad de las medias. Pero es necesario antes de sacar conclusiones precipitadas evaluar los supuestos del modelo para ver si la conclusión es válida. 
+<!-- Requisitos:    -->
 
-## Es adecuado el modelos para los datos analizados? se cumplen los supuestos para su implementación?
+<!-- - distribuciones normales -->
+<!-- - independientes entre si, y  -->
+<!-- - igual varianza (homosedásticas) -->
 
-## Boxplot para ver distribución de datos
+<!-- Si los supuestos no se satisface se pueden aplicar trasnformaciones para intentar aproximarnos a la normalidad en la distribución de los datos o bien aplicar técnicas no paramétricas que no tengan aquellos supuestos.   -->
 
-- Identificar asimetrías(sesgo a uno de los lados)     
-- Datos atipicos       
-- Diferencia de varianzas   
-- Homocedasticidad   
+<!-- ```{r} -->
 
-```{r}
-df %>% 
-  ggplot(aes(x = organo, y = causas_iniciadas, color = circunscripcion)) +
-  geom_boxplot() +
-  theme_bw() +
-  coord_flip()
-```
+<!-- ``` -->
 
-Existen importantes diferencias entre las distribuciones de datos de cada organismo. Las cajas no solo se ubican en rangos distintos sino que también abarcan distintos valores según el órgano. Se detectan presencia de outliers. 
-
-Bajo estas condiciones deberíamos sospechar que **no hay homosedasticidad**. Para cuantificar esto existen los siguientes test:
-
-## Test para contrastar homosedasticidad
-
-### Test de Bartlett
-
-```{r}
-bartlett.test(df$causas_iniciadas ~ df$organo)
-```
-
-El test aporta evidencia para rechazar la hipótesis de nulidad: hay evidencia estadística significativa de que la varianza de alguno de los órganos difiere de la de otros. Pero el problema de este test es su sensibilidad al supuesto de normalidad. Una alternativa más robusta es el test de Levene, que no es sensible a la falta de normalidad o a la presencia de valores atípicos.
-
-### Test de Levene
-
-```{r}
-leveneTest(y = df$causas_iniciadas, group = df$organo, center = 'median')
-```
-
-Como el p-valor es tan pequeño se rechaza el supuesto de homosedasticidad.
-
-## Test para contrastar normalidad
-
-```{r}
-#Opcion 1 (Muestras n>=50) Lilliefors - Kolmogorov
-lillie.test(df_anova$residuals)
-```
-
-```{r}
-# Opcion 2 (Muestras n<=50) Shapirol - Wilks
-shapiro.test(residuals(df_anova))
-```
-
-```{r}
-ad.test(residuals(df_anova))
-```
-
-  ```{r}
-agostino.test(residuals(df_anova))
-```
-
-En base a los tres test existe evidencia de falta de normalidad en los datos. Por eso se sostiene que la conclusión es inválida.
-
-## Curva de densidad para ver distribución de datos
-
-```{r}
-df %>% 
-  ggplot(aes(x=causas_iniciadas, color=circunscripcion)) +
-  geom_density() +
-  facet_wrap(organo ~ .) # +
-  #theme(legend.position = 'none')
-```
-
-## Probar si los datos siguen una distribución normal utilizando qqplots
-
-Si se tuviese una muestra distribuída perfectamente normal, se esperaría que los puntos estuviesen perfectamente alineados con la línea de referencia, sin embargo, las muestran con las que se trabajan en la práctica casi nunca presentan este comportamiento aún si fueron obtenidas de una población normal. En la práctica se aceptan alejamientos del patrón lineal para aceptar que los datos si provienen de una población normal.
+<!-- ```{r} -->
+<!-- str(df) -->
+<!-- ``` -->
 
 
-```{r}
-df %>% 
-  ggplot(aes(sample = causas_iniciadas, colour = circunscripcion))+
-  stat_qq(show.legend = F)+
-  stat_qq_line()+
-  facet_wrap(.~ organo)
-```
+<!-- ## Anova -->
+
+<!-- ```{r} -->
+<!-- df_anova = aov(data = df, causas_iniciadas ~ organo ) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- summary(df_anova) -->
+<!-- ``` -->
+
+<!-- Considerando los resultados debemos rechazar la igualdad de las medias. Pero es necesario antes de sacar conclusiones precipitadas evaluar los supuestos del modelo para ver si la conclusión es válida.  -->
+
+<!-- ## Es adecuado el modelos para los datos analizados? se cumplen los supuestos para su implementación? -->
+
+<!-- ## Boxplot para ver distribución de datos -->
+
+<!-- - Identificar asimetrías(sesgo a uno de los lados)      -->
+<!-- - Datos atipicos        -->
+<!-- - Diferencia de varianzas    -->
+<!-- - Homocedasticidad    -->
+
+<!-- ```{r} -->
+<!-- df %>%  -->
+<!--   ggplot(aes(x = organo, y = causas_iniciadas, color = circunscripcion)) + -->
+<!--   geom_boxplot() + -->
+<!--   theme_bw() + -->
+<!--   coord_flip() -->
+<!-- ``` -->
+
+<!-- Existen importantes diferencias entre las distribuciones de datos de cada organismo. Las cajas no solo se ubican en rangos distintos sino que también abarcan distintos valores según el órgano. Se detectan presencia de outliers.  -->
+
+<!-- Bajo estas condiciones deberíamos sospechar que **no hay homosedasticidad**. Para cuantificar esto existen los siguientes test: -->
+
+<!-- ## Test para contrastar homosedasticidad -->
+
+<!-- ### Test de Bartlett -->
+
+<!-- ```{r} -->
+<!-- bartlett.test(df$causas_iniciadas ~ df$organo) -->
+<!-- ``` -->
+
+<!-- El test aporta evidencia para rechazar la hipótesis de nulidad: hay evidencia estadística significativa de que la varianza de alguno de los órganos difiere de la de otros. Pero el problema de este test es su sensibilidad al supuesto de normalidad. Una alternativa más robusta es el test de Levene, que no es sensible a la falta de normalidad o a la presencia de valores atípicos. -->
+
+<!-- ### Test de Levene -->
+
+<!-- ```{r} -->
+<!-- leveneTest(y = df$causas_iniciadas, group = df$organo, center = 'median') -->
+<!-- ``` -->
+
+<!-- Como el p-valor es tan pequeño se rechaza el supuesto de homosedasticidad. -->
+
+<!-- ## Test para contrastar normalidad -->
+
+<!-- ```{r} -->
+<!-- #Opcion 1 (Muestras n>=50) Lilliefors - Kolmogorov -->
+<!-- lillie.test(df_anova$residuals) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- # Opcion 2 (Muestras n<=50) Shapirol - Wilks -->
+<!-- shapiro.test(residuals(df_anova)) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ad.test(residuals(df_anova)) -->
+<!-- ``` -->
+
+<!--   ```{r} -->
+<!-- agostino.test(residuals(df_anova)) -->
+<!-- ``` -->
+
+<!-- En base a los tres test existe evidencia de falta de normalidad en los datos. Por eso se sostiene que la conclusión es inválida. -->
+
+<!-- ## Curva de densidad para ver distribución de datos -->
+
+<!-- ```{r} -->
+<!-- df %>%  -->
+<!--   ggplot(aes(x=causas_iniciadas, color=circunscripcion)) + -->
+<!--   geom_density() + -->
+<!--   facet_wrap(organo ~ .) # + -->
+<!--   #theme(legend.position = 'none') -->
+<!-- ``` -->
+
+<!-- ## Probar si los datos siguen una distribución normal utilizando qqplots -->
+
+<!-- Si se tuviese una muestra distribuída perfectamente normal, se esperaría que los puntos estuviesen perfectamente alineados con la línea de referencia, sin embargo, las muestran con las que se trabajan en la práctica casi nunca presentan este comportamiento aún si fueron obtenidas de una población normal. En la práctica se aceptan alejamientos del patrón lineal para aceptar que los datos si provienen de una población normal. -->
 
 
-# ¿Qué debe hacerse si los residuos no son normales o resultan heterocedásticos?
+<!-- ```{r} -->
+<!-- df %>%  -->
+<!--   ggplot(aes(sample = causas_iniciadas, colour = circunscripcion))+ -->
+<!--   stat_qq(show.legend = F)+ -->
+<!--   stat_qq_line()+ -->
+<!--   facet_wrap(.~ organo) -->
+<!-- ``` -->
 
-Realizar transfomraciones para que se cumplan los supuesto.
-      
-Transformaciones Box-Cox
 
-```{r}
-df <- df %>% filter(causas_iniciadas > 0)
-b = boxcox(df$causas_iniciadas~df$organo)
-b
-```
+<!-- # ¿Qué debe hacerse si los residuos no son normales o resultan heterocedásticos? -->
 
-```{r}
-# Lambda exacto
-lambda <- b$x[which.max(b$y)] 
-df$causas_iniciadas <- (df$causas_iniciadas ^ lambda - 1) / lambda
+<!-- Realizar transfomraciones para que se cumplan los supuesto. -->
 
-```
+<!-- Transformaciones Box-Cox -->
 
-```{r}
-fit2=lm(df$causas_iniciadas^lambda~df$organo) 
-summary(fit2)  
-```
+<!-- ```{r} -->
+<!-- df <- df %>% filter(causas_iniciadas > 0) -->
+<!-- b = boxcox(df$causas_iniciadas~df$organo) -->
+<!-- b -->
+<!-- ``` -->
 
-```{r}
-qqPlot(fit2$residuals, col.lines = "green")
-```
-# Anova y después
+<!-- ```{r} -->
+<!-- # Lambda exacto -->
+<!-- lambda <- b$x[which.max(b$y)]  -->
+<!-- df$causas_iniciadas <- (df$causas_iniciadas ^ lambda - 1) / lambda -->
 
-Cuando se rechaza la hipótesis nula es natural seguir la exploración para determinar cuáles medias son diferentes. Esta exploración se denominan *comparaciones a posteriori o post-hoc*.
+<!-- ``` -->
 
-```{r}
-#completar
-```
+<!-- ```{r} -->
+<!-- fit2=lm(df$causas_iniciadas^lambda~df$organo)  -->
+<!-- summary(fit2)   -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- qqPlot(fit2$residuals, col.lines = "green") -->
+<!-- ``` -->
+<!-- # Anova y después -->
+
+<!-- Cuando se rechaza la hipótesis nula es natural seguir la exploración para determinar cuáles medias son diferentes. Esta exploración se denominan *comparaciones a posteriori o post-hoc*. -->
+
+<!-- ```{r} -->
+<!-- #completar -->
+<!-- ``` -->
 
 
 
