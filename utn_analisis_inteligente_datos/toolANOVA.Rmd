@@ -5,197 +5,297 @@ date: "21/3/2022"
 output: html_document
 params:
   nombre_dataset:
-    label: "Seleccione nombre data set:"
-    value: "ninguno"
-    input: select
-    choices: [practica1, nadadores,]
+    label: "Seleccione nombre csv"
+    value: ""
+    input: text
+  values:
+    label: 'Variable numerica'
+    input: text
+    value: ""
+  categories:
+    label: 'Variable categorica o factor'
+    input: text
+    value: ""
+  ctranformacion: FALSE
 ---
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = T, warning = F, message = F)
-source("Unidad0_repos_and_tools.R")
+knitr::opts_chunk$set(echo = F, warning = F, message = F)
+#source("Unidad0_repos_and_tools.R")
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(nortest)
+library(moments)
+
 # library('FactoMineR')
 # bibliograf
-# https://rpubs.com/Miguel_Tripp/anova ACA
+# https://bookdown.org/steve_midway/DAR/understanding-anova-in-r.html _______IMPORTANTE_________
+# https://rpubs.com/Miguel_Tripp/anova 
 # https://www.cienciadedatos.net/documentos/19_anova.html
 # https://www.cienciadedatos.net/documentos/9_homogeneidad_de_varianza_homocedasticidad.html
 #https://fhernanb.github.io/Manual-de-R/ph.html#prueba-de-hip%C3%B3tesis-para-la-varianza-sigma2-de-una-poblaci%C3%B3n-normal
 ```
 
 ```{r}
-
 db_name = params$nombre_dataset
+variable_numerica = params$values
+variable_factor = params$categories
+ctranformacion = params$ctranformacion
+options(scipen = 999) # inhabilito notacion científica
 
-  
 ```
 
+# Intro
+
+Análisis de las medias de dos o más grupos.
+
+**H0:** las medias son iguales entre los grupos . Bajo la hipótesis nula de que las observaciones de los distintos grupos proceden todas de la misma población (tienen la misma media y varianza), la varianza ponderada entre grupos será la misma que la varianza promedio dentro de los grupos.
+**H1:** al menos dos medias son distintas del resto
+
+**Requisitos:**
+
+- distribuciones normales
+- independientes entre si, y
+- igual varianza (homosedásticas)
+
+Si los supuestos no se satisface se pueden aplicar trasnformaciones para intentar aproximarnos a la normalidad en la distribución de los datos o bien aplicar técnicas no paramétricas que no tengan aquellos supuestos.
+
+## Datos 
+
 ```{r}
-dir = "~/research_tools/utn_analisis_inteligente_datos/"
+dir = "~/R/research_tools/utn_analisis_inteligente_datos/"
 f = glue::glue(dir, db_name)
-df_raw <- readxl::read_excel(f)
-
+df <- read_csv(f)
+# manual enter data
 
 ```
 
 ```{r}
-str(df_raw)
+str(df) 
+```
+
+Head:
+
+```{r}
+head(df) 
+```
+
+Observaciones por grupo:
+
+```{r}
+observaciones <- df %>% 
+  group_by(df[[{{variable_factor}}]]) %>% 
+  summarise(n())
+
+observaciones
 ```
 
 
-<!-- # ANOVA -->
+## Se cumplen los supuestos para su implementación?
 
-<!-- Análisis de las medias de dos o más grupos. -->
+**Boxplot para ver distribución de datos**
 
-<!-- **H0:** las medias son iguales entre los grupos . Bajo la hipótesis nula de que las observaciones de los distintos grupos proceden todas de la misma población (tienen la misma media y varianza), la varianza ponderada entre grupos será la misma que la varianza promedio dentro de los grupos. -->
-<!-- **H1:** al menos dos medias son distintas del resto -->
+- Identificar asimetrías(sesgo a uno de los lados)
+- Datos atipicos
+- Diferencia de varianzas
+- Homocedasticidad    
 
-<!-- Requisitos:    -->
+```{r}
+ggplot(data = df, aes(x = df[[{{variable_factor}}]], y = df[[{{variable_numerica}}]], fill = as.factor(df[[{{variable_factor}}]])))+
+ geom_boxplot()+
+ geom_point(position = position_jitter(0.1))
+```
 
-<!-- - distribuciones normales -->
-<!-- - independientes entre si, y  -->
-<!-- - igual varianza (homosedásticas) -->
+**Evaluación Parcial** Existen diferencias entre las distribuciones de datos de cada organismo? ver: Las cajas no solo se ubican en rangos distintos? abarcan distintos valores según el órgano? Bajo estas condiciones deberíamos sospechar que no hay homosedasticidad.
 
-<!-- Si los supuestos no se satisface se pueden aplicar trasnformaciones para intentar aproximarnos a la normalidad en la distribución de los datos o bien aplicar técnicas no paramétricas que no tengan aquellos supuestos.   -->
+**QQplots**
 
-<!-- ```{r} -->
+Si se tuviese una muestra distribuída perfectamente normal, se esperaría que los puntos estuviesen perfectamente alineados con la línea de referencia, sin embargo, las muestran con las que se trabajan en la práctica casi nunca presentan este comportamiento aún si fueron obtenidas de una población normal. En la práctica se aceptan alejamientos del patrón lineal para aceptar que los datos si provienen de una población normal.
 
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- str(df) -->
-<!-- ``` -->
-
-
-<!-- ## Anova -->
-
-<!-- ```{r} -->
-<!-- df_anova = aov(data = df, causas_iniciadas ~ organo ) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- summary(df_anova) -->
-<!-- ``` -->
-
-<!-- Considerando los resultados debemos rechazar la igualdad de las medias. Pero es necesario antes de sacar conclusiones precipitadas evaluar los supuestos del modelo para ver si la conclusión es válida.  -->
-
-<!-- ## Es adecuado el modelos para los datos analizados? se cumplen los supuestos para su implementación? -->
-
-<!-- ## Boxplot para ver distribución de datos -->
-
-<!-- - Identificar asimetrías(sesgo a uno de los lados)      -->
-<!-- - Datos atipicos        -->
-<!-- - Diferencia de varianzas    -->
-<!-- - Homocedasticidad    -->
-
-<!-- ```{r} -->
-<!-- df %>%  -->
-<!--   ggplot(aes(x = organo, y = causas_iniciadas, color = circunscripcion)) + -->
-<!--   geom_boxplot() + -->
-<!--   theme_bw() + -->
-<!--   coord_flip() -->
-<!-- ``` -->
-
-<!-- Existen importantes diferencias entre las distribuciones de datos de cada organismo. Las cajas no solo se ubican en rangos distintos sino que también abarcan distintos valores según el órgano. Se detectan presencia de outliers.  -->
-
-<!-- Bajo estas condiciones deberíamos sospechar que **no hay homosedasticidad**. Para cuantificar esto existen los siguientes test: -->
-
-<!-- ## Test para contrastar homosedasticidad -->
-
-<!-- ### Test de Bartlett -->
-
-<!-- ```{r} -->
-<!-- bartlett.test(df$causas_iniciadas ~ df$organo) -->
-<!-- ``` -->
-
-<!-- El test aporta evidencia para rechazar la hipótesis de nulidad: hay evidencia estadística significativa de que la varianza de alguno de los órganos difiere de la de otros. Pero el problema de este test es su sensibilidad al supuesto de normalidad. Una alternativa más robusta es el test de Levene, que no es sensible a la falta de normalidad o a la presencia de valores atípicos. -->
-
-<!-- ### Test de Levene -->
-
-<!-- ```{r} -->
-<!-- leveneTest(y = df$causas_iniciadas, group = df$organo, center = 'median') -->
-<!-- ``` -->
-
-<!-- Como el p-valor es tan pequeño se rechaza el supuesto de homosedasticidad. -->
-
-<!-- ## Test para contrastar normalidad -->
-
-<!-- ```{r} -->
-<!-- #Opcion 1 (Muestras n>=50) Lilliefors - Kolmogorov -->
-<!-- lillie.test(df_anova$residuals) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- # Opcion 2 (Muestras n<=50) Shapirol - Wilks -->
-<!-- shapiro.test(residuals(df_anova)) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- ad.test(residuals(df_anova)) -->
-<!-- ``` -->
-
-<!--   ```{r} -->
-<!-- agostino.test(residuals(df_anova)) -->
-<!-- ``` -->
-
-<!-- En base a los tres test existe evidencia de falta de normalidad en los datos. Por eso se sostiene que la conclusión es inválida. -->
-
-<!-- ## Curva de densidad para ver distribución de datos -->
-
-<!-- ```{r} -->
-<!-- df %>%  -->
-<!--   ggplot(aes(x=causas_iniciadas, color=circunscripcion)) + -->
-<!--   geom_density() + -->
-<!--   facet_wrap(organo ~ .) # + -->
-<!--   #theme(legend.position = 'none') -->
-<!-- ``` -->
-
-<!-- ## Probar si los datos siguen una distribución normal utilizando qqplots -->
-
-<!-- Si se tuviese una muestra distribuída perfectamente normal, se esperaría que los puntos estuviesen perfectamente alineados con la línea de referencia, sin embargo, las muestran con las que se trabajan en la práctica casi nunca presentan este comportamiento aún si fueron obtenidas de una población normal. En la práctica se aceptan alejamientos del patrón lineal para aceptar que los datos si provienen de una población normal. -->
+```{r}
+ggplot(data = df, aes(sample = df[[{{variable_numerica}}]], colour = as.factor(df[[{{variable_factor}}]])))+
+  stat_qq(show.legend = F)+
+  stat_qq_line()+
+  facet_wrap(.~ as.factor(df[[{{variable_factor}}]]))
+```
 
 
-<!-- ```{r} -->
-<!-- df %>%  -->
-<!--   ggplot(aes(sample = causas_iniciadas, colour = circunscripcion))+ -->
-<!--   stat_qq(show.legend = F)+ -->
-<!--   stat_qq_line()+ -->
-<!--   facet_wrap(.~ organo) -->
-<!-- ``` -->
+## Anova
+
+```{r}
+values = df[[{{variable_numerica}}]]
+values
+
+```
+
+```{r}
+# factorizo variable factor
+fact = as.factor(df[[{{variable_factor}}]]) 
+fact
+
+```
+
+### fit del modelo
+
+```{r}
+if(ctranformacion){
+  bm = MASS::boxcox(lm(values~fact)) 
+  lambda= bm$x
+  lik= bm$y
+  bcm=cbind(lambda,lik)
+  bcm[order(lik),]
+  lamvalue=bm$x[which(bm$y==max(bm$y))]
+  df[[{{variable_numerica}}]] = values^lamvalue
+  df_anova =  aov(values ~ fact, data = df )
+} else{
+  df_anova =  aov(values ~ fact, data = df )  
+}
+```
+
+```{r}
+summary(df_anova)
+```
+
+### coeficientes
+
+```{r}
+df_anova$coefficients
+```
+
+### p-value
+
+```{r}
+p_value <- summary(df_anova)[[1]][1,5]
+p_value
+```
+
+### F-value
+
+```{r}
+summary(df_anova)[[1]][1,4]
+```
+
+### Plot ANOVA
+
+```{r}
+plot(df_anova)
+```
+
+### Conclusión
+
+```{r, class.output="bg-warning"}
+if(p_value<0.05){'H0 debe rechazarse, al menos dos medias son distintas a nivel de significancia 0.05'} else{'No hay evidencia para rechazar H0, las medias son iguales'}
+
+```
+
+## Testear homosedasticidad
+
+Test de Levene
+
+*que no es sensible a la falta de normalidad o a la presencia de valores atípicos*
+
+```{r}
+ltest = car::leveneTest(y = df[[{{variable_numerica}}]], group = df[[{{variable_factor}}]], center = 'median')
+ltest
+```
+
+```{r, class.output="bg-warning"}
+if(ltest$`Pr(>F)`[1]<0.05){'H0 debe rechazarse: no se cumple supuesto de homosedasticidad'} else {'No hay evidencia para rechazar H0, luego los datos son homosedásticos'}
+```
+
+Test de Bartlett 
+
+*sensibilidad al supuesto de normalidad*
+
+```{r}
+btest = bartlett.test(df[[{{variable_numerica}}]] ~ df[[{{variable_factor}}]])
+btest
+```
+
+```{r, class.output="bg-warning"}
+if(btest$p.value<0.05){'H0 debe rechazarse: no se cumple supuesto de homosedasticidad'} else {'No hay evidencia para rechazar H0, luego los datos son homosedásticos'}
+```
+
+## Testear normalidad
+
+Si los grupos tienen mas de *50 observaciones* se emplea el test de Kolmogorov-Smirnov con la corrección de Lilliefors. Si fuesen menos de 50 eventos por grupo se emplearía el test Shapiro-Wilk.
+
+```{r, class.output="bg-warning"}
+
+if(observaciones[[2]][[1]] > 50) {
+  
+  #Opcion 1 (Muestras n>=50) Lilliefors - Kolmogorov
+  lillietest = lillie.test(df_anova$residuals)
+  print(lillietest)
+  if(lillietest$p.value<0.05){'H0 debe rechazarse: no hay normalidad'} else {'No hay evidencia para rechazar H0, luego los datos son normales'}
+  
+} else {
+  # Opcion 2 (Muestras n<=50) Shapirol - Wilks
+  shapirotest = shapiro.test(residuals(df_anova))
+  print(shapirotest)
+  if(shapirotest$p.value<0.05){'H0 debe rechazarse: no hay normalidad'} else {'No hay evidencia para rechazar H0, luego los datos son normales'}
+}
+
+```
+
+## Testear normalidad analizando residuos
+
+```{r}
+adtest <- nortest::ad.test(residuals(df_anova))
+adtest
+```
+
+```{r, class.output="bg-warning"}
+ if(adtest$p.value<0.05){'H0 debe rechazarse: no hay normalidad'} else {'No hay evidencia para rechazar H0, luego los datos son normales'}
+```
+
+```{r}
+agostinotest = moments::agostino.test(residuals(df_anova))
+agostinotest
+```
 
 
-<!-- # ¿Qué debe hacerse si los residuos no son normales o resultan heterocedásticos? -->
+```{r, class.output="bg-warning"}
+ if(agostinotest$p.value<0.05){'H0 debe rechazarse: no hay normalidad'} else {'No hay evidencia para rechazar H0, luego los datos son normales'}
+```
 
-<!-- Realizar transfomraciones para que se cumplan los supuesto. -->
+# Anova y después: post-hoc
 
-<!-- Transformaciones Box-Cox -->
+Cuando se rechaza la hipótesis nula es natural seguir la exploración para determinar cuáles medias son diferentes. Esta exploración se denominan *comparaciones a posteriori o post-hoc*.
 
-<!-- ```{r} -->
-<!-- df <- df %>% filter(causas_iniciadas > 0) -->
-<!-- b = boxcox(df$causas_iniciadas~df$organo) -->
-<!-- b -->
-<!-- ``` -->
+## Tukey’s Honest Significant Differences (HSD)
 
-<!-- ```{r} -->
-<!-- # Lambda exacto -->
-<!-- lambda <- b$x[which.max(b$y)]  -->
-<!-- df$causas_iniciadas <- (df$causas_iniciadas ^ lambda - 1) / lambda -->
+```{r}
+TukeyHSD(df_anova)
+```
 
-<!-- ``` -->
+```{r}
+plot(TukeyHSD(df_anova))
+```
 
-<!-- ```{r} -->
-<!-- fit2=lm(df$causas_iniciadas^lambda~df$organo)  -->
-<!-- summary(fit2)   -->
-<!-- ``` -->
+# Cuando ANOVA no funciona
 
-<!-- ```{r} -->
-<!-- qqPlot(fit2$residuals, col.lines = "green") -->
-<!-- ``` -->
-<!-- # Anova y después -->
+El test de Kruskal-Wallis, también conocido como test H, es la alternativa no paramétrica al test ANOVA de una vía para datos no pareados. Se trata de una extensión del test de Mann-Whitney para más de dos grupos. Es por lo tanto de un test que emplea rangos para contrastar la hipótesis de que k muestras han sido obtenidas de una misma población.
 
-<!-- Cuando se rechaza la hipótesis nula es natural seguir la exploración para determinar cuáles medias son diferentes. Esta exploración se denominan *comparaciones a posteriori o post-hoc*. -->
+A diferencia del ANOVA en el que se comparan medias, el test de Kruskal-Wallis contrasta si las diferentes muestras están equidistribuidas y que por lo tanto pertenecen a una misma distribución (población). Bajo ciertas simplificaciones puede considerarse que el test de Kruskal-Wallis compara las medianas.
 
-<!-- ```{r} -->
-<!-- #completar -->
-<!-- ``` -->
+H0: todas las muestras provienen de la misma población (distribución).    
+HA: Al menos una muestra proviene de una población con una distribución distinta 
+
+```{r}
+kruskaltest = kruskal.test( values ~ fact, data = df)
+kruskaltest
+```
+
+
+```{r, class.output="bg-warning"}
+ if(kruskaltest$p.value<0.05){'H0 debe rechazarse: se encuentra significancia en la diferencia de al menos dos grupos'} else {'No hay evidencia para rechazar H0'}
+```
+
+```{r}
+#pairwise.wilcox.test(x = values, g = fact, p.adjust.method = "holm" )
+pgirmess::kruskalmc(values ~ fact)
+```
 
 
 
