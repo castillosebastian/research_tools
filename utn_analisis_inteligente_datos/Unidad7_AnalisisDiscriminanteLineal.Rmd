@@ -1,0 +1,70 @@
+---
+title: "Analisis Discriminante Lineal"
+author: 'Claudio Sebastián Castillo'
+date: "21/3/2022"
+output: html_document
+params:
+  nombre_dataset:
+    label: "Seleccione nombre data set:"
+    value: "ninguno"
+    input: select
+    choices: [practica1, nadadores,]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+source("Unidad0_repos_and_tools.R")
+
+```
+
+# Análisis Discriminante Lineal
+
+## Dos grupos
+
+Propone una funciòn que depende del conjunto de variables (variables discriminantes) que al ser aplicada en un nuevo indiviuo devuelve un valor que permite asignarlo a alguno de los grupos definidos.
+
+En LDA de dispone de un conjunto de observaciones de entrenamiento multivariado y el grupo de pertenencia de cada individuo. La base es: **N * (p + 1)**. Por eso se trata de un caso de clasificación supervisada.    
+
+El análisis tiene utilidad cuando las medias de ambos grupos difieren significativamente. La ausencia de normalidad o presencia de outliers genera problames en la estimazión de los parámetros de las distribuciones de ambos grupos.
+
+Puede realizarse mediante distintos enfoques:
+-función de verosimilitud, 
+-distancias de Mahalanobis, y 
+-probabilidad a posteriori
+
+En el caso en que las matrices de varianzas-covarianzas de las distintas poblaciones pueden suponerse iguales, los tres enfoques presentados coinciden.
+
+**Requisitos**
+-normalidad multivariada,    
+-independencia de las observaciones y    
+-homocedasticidad.   
+
+## Más de dos grupos
+
+Cuando se cumplen los requisitos de normalidad multivariada y homosedasticidad se pueden aplicar las siguientes técnicas:   
+
+- primera propuesta: se calcula la distancia de Mahalanobis al centroide (media) de cada grupo y un nuevo individuo se clasifica en el i-ésimo grupo si el valor de la
+distancia de Mahalanobis a ese grupo es la menor de todas.    
+- Segunda propuesta: se calcula la probabilidad a posteriori de que una nueva observación pertenezca a cada uno de los grupos. Se clasifica la observación en el grupo que maximiza dicha probabilidad o la función de verosimilitud.
+
+
+# Análisis Discriminante Cuadrático
+
+Cuando el supuesto de homocedasticidad no puede sostenerse, una opción es utilizar el análisis discriminante cuadrático de Fisher. El supuesto de normalidad multivariada debe satisfacerse.
+
+# Alternativas Robustas: ADC Robusto
+
+# Máquina de soporte vectorial
+
+Es una técnica de clasificación lineal. 
+
+Ventajas: 
+- El entrenamiento es relativamente sencillo.    
+- No existe un óptimo local.    
+- Se escala relativamente bien para datos en espacios de alta dimensión.     
+- El compromiso entre la complejidad del clasificador y el error puede ser controlado explícitamente.    
+- Datos no tradicionales, como cadenas de caracteres o árboles, pueden ser ingresados como entrada de las SVM.
+
+# Regresion logística.
+
+
+

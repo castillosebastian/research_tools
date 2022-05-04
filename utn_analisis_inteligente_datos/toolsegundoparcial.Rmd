@@ -1,8 +1,8 @@
 ---
-title: "Anova"
-author: "Área de Planificación Gestión y Estadística"
-date: "21/3/2022"
-output: html_document
+title: "Análisis Inteligente de Datos: Segundo Parcial"
+author: "Claudio Sebastián Castillo"
+date:  "`r format(Sys.Date(), '%d de %B de %Y') `"
+output: pdf_document
 params:
   ANOVA: FALSE
   nombre_dataset:
@@ -42,20 +42,22 @@ options(scipen = 999) # inhabilito notacion científica
 
 ```
 
-# Intro ANOVA
+# ANOVA 
 
-Análisis de las medias de dos o más grupos.
+<!-- # EJERCICIO X -->
 
-**H0:** las medias son iguales entre los grupos . Bajo la hipótesis nula de que las observaciones de los distintos grupos proceden todas de la misma población (tienen la misma media y varianza), la varianza ponderada entre grupos será la misma que la varianza promedio dentro de los grupos.
-**H1:** al menos dos medias son distintas del resto
+<!-- Análisis de las medias de dos o más grupos. -->
 
-**Requisitos:**
+<!-- **H0:** las medias son iguales entre los grupos . Bajo la hipótesis nula de que las observaciones de los distintos grupos proceden todas de la misma población (tienen la misma media y varianza), la varianza ponderada entre grupos será la misma que la varianza promedio dentro de los grupos. -->
+<!-- **H1:** al menos dos medias son distintas del resto -->
 
-- distribuciones normales
-- independientes entre si, y
-- igual varianza (homosedásticas)
+<!-- **Requisitos:** -->
 
-Si los supuestos no se satisface se pueden aplicar trasnformaciones para intentar aproximarnos a la normalidad en la distribución de los datos o bien aplicar técnicas no paramétricas que no tengan aquellos supuestos.
+<!-- - distribuciones normales -->
+<!-- - independientes entre si, y -->
+<!-- - igual varianza (homosedásticas) -->
+
+<!-- Si los supuestos no se satisface se pueden aplicar trasnformaciones para intentar aproximarnos a la normalidad en la distribución de los datos o bien aplicar técnicas no paramétricas que no tengan aquellos supuestos. -->
 
 ## Datos 
 
@@ -83,19 +85,18 @@ Observaciones por grupo:
 observaciones <- df %>% 
   group_by(df[[{{variable_factor}}]]) %>% 
   summarise(n())
-
 observaciones
 ```
 
 
 ## Se cumplen los supuestos para su implementación?
 
-**Boxplot para ver distribución de datos**
+<!-- **Boxplot para ver distribución de datos** -->
 
-- Identificar asimetrías(sesgo a uno de los lados)
-- Datos atipicos
-- Diferencia de varianzas
-- Homocedasticidad    
+<!-- - Identificar asimetrías(sesgo a uno de los lados) -->
+<!-- - Datos atipicos -->
+<!-- - Diferencia de varianzas -->
+<!-- - Homocedasticidad     -->
 
 ```{r, anova5, eval=ANOVA} 
 ggplot(data = df, aes(x = df[[{{variable_factor}}]], y = df[[{{variable_numerica}}]], fill = as.factor(df[[{{variable_factor}}]])))+
@@ -103,11 +104,11 @@ ggplot(data = df, aes(x = df[[{{variable_factor}}]], y = df[[{{variable_numerica
  geom_point(position = position_jitter(0.1))
 ```
 
-**Evaluación Parcial** Existen diferencias entre las distribuciones de datos de cada organismo? ver: Las cajas no solo se ubican en rangos distintos? abarcan distintos valores según el órgano? Bajo estas condiciones deberíamos sospechar que no hay homosedasticidad.
+<!-- **Evaluación Parcial** Existen diferencias entre las distribuciones de datos de cada organismo? ver: Las cajas no solo se ubican en rangos distintos? abarcan distintos valores según el órgano? Bajo estas condiciones deberíamos sospechar que no hay homosedasticidad. -->
 
-**QQplots**
+<!-- **QQplots** -->
 
-Si se tuviese una muestra distribuída perfectamente normal, se esperaría que los puntos estuviesen perfectamente alineados con la línea de referencia, sin embargo, las muestran con las que se trabajan en la práctica casi nunca presentan este comportamiento aún si fueron obtenidas de una población normal. En la práctica se aceptan alejamientos del patrón lineal para aceptar que los datos si provienen de una población normal.
+<!-- Si se tuviese una muestra distribuída perfectamente normal, se esperaría que los puntos estuviesen perfectamente alineados con la línea de referencia, sin embargo, las muestran con las que se trabajan en la práctica casi nunca presentan este comportamiento aún si fueron obtenidas de una población normal. En la práctica se aceptan alejamientos del patrón lineal para aceptar que los datos si provienen de una población normal. -->
 
 ```{r, anova6, eval=ANOVA}
 ggplot(data = df, aes(sample = df[[{{variable_numerica}}]], colour = as.factor(df[[{{variable_factor}}]])))+
@@ -116,13 +117,11 @@ ggplot(data = df, aes(sample = df[[{{variable_numerica}}]], colour = as.factor(d
   facet_wrap(.~ as.factor(df[[{{variable_factor}}]]))
 ```
 
-
 ## Anova
 
 ```{r, anova7, eval=ANOVA}
 values = df[[{{variable_numerica}}]]
 values
-
 ```
 
 ```{r, anova8, , eval=ANOVA}
@@ -134,7 +133,7 @@ fact
 
 ### fit del modelo
 
-```{r, anova9, eval=ANOVA}
+```{r, anova9, eval=ANOVA} 
 if(ctranformacion){
   bm = MASS::boxcox(lm(values~fact)) 
   lambda= bm$x
@@ -149,8 +148,8 @@ if(ctranformacion){
 }
 ```
 
-```{r, anova10, eval=ANOVA}
-summary(df_anova)
+```{r, anova10, eval=ANOVA} 
+summary(df_anova) 
 ```
 
 ### coeficientes
@@ -215,7 +214,7 @@ if(btest$p.value<0.05){'H0 debe rechazarse: no se cumple supuesto de homosedasti
 
 ## Testear normalidad
 
-Si los grupos tienen mas de *50 observaciones* se emplea el test de Kolmogorov-Smirnov con la corrección de Lilliefors. Si fuesen menos de 50 eventos por grupo se emplearía el test Shapiro-Wilk.
+<!-- Si los grupos tienen mas de *50 observaciones* se emplea el test de Kolmogorov-Smirnov con la corrección de Lilliefors. Si fuesen menos de 50 eventos por grupo se emplearía el test Shapiro-Wilk. -->
 
 ```{r, anova20, eval=ANOVA, class.output="bg-warning"}
 
@@ -257,7 +256,7 @@ agostinotest
 
 # Anova y después: post-hoc
 
-Cuando se rechaza la hipótesis nula es natural seguir la exploración para determinar cuáles medias son diferentes. Esta exploración se denominan *comparaciones a posteriori o post-hoc*.
+<!-- Cuando se rechaza la hipótesis nula es natural seguir la exploración para determinar cuáles medias son diferentes. Esta exploración se denominan *comparaciones a posteriori o post-hoc*. -->
 
 ## Tukey’s Honest Significant Differences (HSD)
 
@@ -269,20 +268,19 @@ TukeyHSD(df_anova)
 plot(TukeyHSD(df_anova))
 ```
 
-# Cuando ANOVA no funciona
+# Cuando ANOVA no funciona: test de Kruskal-Wallis
 
-El test de Kruskal-Wallis, también conocido como test H, es la alternativa no paramétrica al test ANOVA de una vía para datos no pareados. Se trata de una extensión del test de Mann-Whitney para más de dos grupos. Es por lo tanto de un test que emplea rangos para contrastar la hipótesis de que k muestras han sido obtenidas de una misma población.
+<!-- El test de Kruskal-Wallis, también conocido como test H, es la alternativa no paramétrica al test ANOVA de una vía para datos no pareados. Se trata de una extensión del test de Mann-Whitney para más de dos grupos. Es por lo tanto de un test que emplea rangos para contrastar la hipótesis de que k muestras han sido obtenidas de una misma población. -->
 
-A diferencia del ANOVA en el que se comparan medias, el test de Kruskal-Wallis contrasta si las diferentes muestras están equidistribuidas y que por lo tanto pertenecen a una misma distribución (población). Bajo ciertas simplificaciones puede considerarse que el test de Kruskal-Wallis compara las medianas.
+<!-- A diferencia del ANOVA en el que se comparan medias, el test de Kruskal-Wallis contrasta si las diferentes muestras están equidistribuidas y que por lo tanto pertenecen a una misma distribución (población). Bajo ciertas simplificaciones puede considerarse que el test de Kruskal-Wallis compara las medianas. -->
 
-H0: todas las muestras provienen de la misma población (distribución).    
-HA: Al menos una muestra proviene de una población con una distribución distinta 
+<!-- H0: todas las muestras provienen de la misma población (distribución).     -->
+<!-- HA: Al menos una muestra proviene de una población con una distribución distinta  -->
 
 ```{r, anova27, eval=ANOVA}
 kruskaltest = kruskal.test( values ~ fact, data = df)
 kruskaltest
 ```
-
 
 ```{r, anova28, eval=ANOVA, class.output="bg-warning"}
  if(kruskaltest$p.value<0.05){'H0 debe rechazarse: se encuentra significancia en la diferencia de al menos dos grupos'} else {'No hay evidencia para rechazar H0'}
@@ -293,5 +291,10 @@ kruskaltest
 pgirmess::kruskalmc(values ~ fact)
 ```
 
+# ANOVA_multivariante
 
 # Analisis Discriminante Lineal (LDA)
+
+
+
+

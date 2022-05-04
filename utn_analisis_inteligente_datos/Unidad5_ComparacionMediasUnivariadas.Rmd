@@ -1,5 +1,5 @@
 ---
-title: "Analisis_Correspondencia"
+title: "ANOVA"
 author: 'Claudio Sebastián Castillo'
 date: "21/3/2022"
 output: html_document
