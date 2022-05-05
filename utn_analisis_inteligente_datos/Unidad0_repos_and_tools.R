@@ -1,5 +1,4 @@
 # Libraries
-library(dplyr)
 library(knitr)
 library(stringr)
 library(janitor)
@@ -38,5 +37,9 @@ library(car)
 library(nortest)
 library(moments)
 library(MASS)
+library(reshape2)
+library(dplyr)
+library(MVN)
+library(klaR)
 
 
