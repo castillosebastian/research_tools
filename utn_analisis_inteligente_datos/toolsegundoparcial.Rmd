@@ -39,6 +39,15 @@ params:
     label: Valores de la nueva observaciones a clasificar
     input: text
     value: ''
+  SVM: no
+  categoriesSVM:
+    label: 'SVM: Variable categorica o factor'
+    input: text
+    value: ''
+  valores_SVM_nvaobs:
+    label: Valores de la nueva observaciones a clasificar
+    input: text
+    value: ''
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F, warning = F, message = F)
@@ -73,6 +82,9 @@ if (params$valores_qda_nvaobs == ''){
 } else {
  valores_qda_nvaobs =  unlist(stringr::str_split(params$valores_qda_nvaobs, ","))
 }
+SVM = params$SVM
+variable_factor_svm = params$categoriesSVM
+
 
 ```
 
@@ -321,7 +333,8 @@ kruskaltest
 pgirmess::kruskalmc(values ~ fact)
 ```
 
-# ANOVA_multivariante
+
+# ANOVA_multivariante 
 
 # Analisis Discriminante Lineal (LDA) 
 
@@ -529,7 +542,7 @@ paste("trainig_error =", trainig_error, "%")
 partimat(temp, datos[[{{variable_factor_lda}}]], method = "lda", prec = 200)
 ```
 
-# Analisis Discriminante Cuadrático (QDA) 
+# Analisis Discriminante Cuadrático (QDA)>falta de homocedasticidad/outliers LDA 
 
 <!-- El clasificador cuadrático o Quadratic Discriminat Analysis QDA se asemeja en gran medida al LDA, con la única diferencia de que el QDA considera que cada clase k tiene su propia matriz de covarianza (∑k) y, como consecuencia, la función discriminante toma forma cuadrática.    -->
 <!-- QDA genera límites de decisión curvos por lo que puede aplicarse a situaciones en las que la separación entre grupos no es lineal.    -->
@@ -615,7 +628,7 @@ boxmtest
 if(boxmtest$p.value < 0.05){'H0 debe rechazarse: hay evidencia de que la covarianza no es igual en todos los grupos'} else {'Se puede aceptar que la matriz de covarianza es igual en todos los grupos'}
 ```
 
-## Estimación de parámetros de la función de densidad (u^(X),E) y cálculo de la función discriminante según aproximación de Fisher via qda()
+## Parámetros de la función de densidad  función discriminante según aproximación de Fisher via qda()
 
 ```{r, eval = QDA}
 modelo_qda <- qda(temp, datosQ[[{{variable_factor_qda}}]])
@@ -659,4 +672,110 @@ paste("trainig_error =", trainig_error, "%")
 ```{r, eval=QDA}
 partimat(temp, datosQ[[{{variable_factor_qda}}]], method = "qda", prec = 200)
 ```
+
+
+
+# Analisis Discriminante Cuadrático Robusto (RQDA)>falta normalidad 
+
+<!-- -emplea distancia de Mahalanobis robusta -->
+<!-- -se obtiene con MCD: Minimum Covariance Determinant -->
+<!-- Utilizar librería: https://github.com/valentint/rrcov  o libro alicia p.321 -->
+
+# Máquinas de Soporte Vectorial
+
+<!-- El algoritmo de las SVM a partir del producto escalar de dos vectores multidimensionales, busca una familia de hiperplanos que sepa ren los grupos. La función que define este producto escalar es denominada kernel y la misma puede ser lineal, polinómica, radial o sigmoidal. -->
+
+<!-- Muy importante estandarizar datos -->
+
+## Datos
+
+```{r, eval=SVM}
+#Cambiar
+datos <- ISLR::OJ
+
+datos[[{{variable_factor_svm}}]] = as.factor(datos[[{{variable_factor_svm}}]]) 
+
+# Convierto variables predictoras tipo factor a numeric
+dat_f = datos %>% select(variable_factor_svm) 
+dat_all =  datos %>% 
+  select(-variable_factor_svm) %>% 
+  mutate_if(is.factor, as.numeric)
+  
+datos = dat_f %>% bind_cols(dat_all)
+
+# resumente datos
+str(datos)
+```
+
+## Grfico datos
+
+```{r, eval=SVM}
+datos %>% 
+  ggplot( aes(x = variable_factor_svm, y = ..count.., fill = datos[[{{variable_factor_svm}}]])) +
+  geom_bar() 
+```
+
+```{r, eval=SVM}
+# Índices observaciones de entrenamiento
+set.seed(123)
+train <- createDataPartition(y = datos[[{{variable_factor_svm}}]], p = 0.8, list = FALSE, times = 1)
+# Datos entrenamiento
+datos_train <- datos[train, ]
+datos_test <- datos[-train, ]
+dim(datos_train)
+dim(datos_test)
+
+```
+
+## Busqueda de mejor hiperparametro C (coste)
+
+<!-- A la hora de ajustar un support vector classifier, es importante tener en cuenta que el hiperparámetro C (cost) controla el equilibrio bias-varianza y la capacidad predictiva del modelo, ya que determina la severidad permitida respecto a las violaciones sobre el margen. En otras palabras, necesitamos fijar un margen de separación entre observaciones a priori. Por ello es recomendable evaluar distintos valores del mismo mediante validación cruzada y escoger el valor óptimo. -->
+
+```{r, eval=SVM}
+temp = datos_train %>% select(-variable_factor_svm)
+set.seed(325)
+tuning <- tune(svm, train.x = temp,  train.y = datos_train[[{{variable_factor_svm}}]],
+               kernel = "linear",
+               ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 15, 20)),
+               scale = TRUE)
+```
+
+```{r, eval=SVM}
+summary(tuning)
+```
+
+### Mejor modelo según hiperparametro
+
+```{r, eval=SVM}
+modelo_svc <- tuning$best.model
+summary(modelo_svc)
+```
+
+```{r, eval=SVM}
+# Muestra de 50 de los 345
+head(modelo_svc$index)
+```
+
+## Predicciones del Modelo 
+
+```{r, eval=SVM}
+temp = datos_test %>% select(-variable_factor_svm)
+predicciones = predict(modelo_svc, temp)
+table(prediccion = predicciones, real = datos_test[[{{variable_factor_svm}}]])
+```
+
+```{r, eval=SVM}
+paste("Observaciones de test mal clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] != predicciones) %>% 
+        round(digits = 4), "%")
+```
+
+
+
+<!-- ```{r} -->
+<!-- modelo_svc <- svm(datos[[{{variable_factor_svm}}]] ~ ., data = datos,  -->
+<!--                   kernel = "linear",  -->
+<!--                   cost = 15,  -->
+<!--                   scale = TRUE) -->
+<!-- ``` -->
 
