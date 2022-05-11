@@ -407,15 +407,6 @@ efecto_grande = rownames(efecto)[efecto[,1] >= 0.14]
 if(length(efecto_grande) >=1){str_c('Efecto grande en:', efecto_grande)} else {'No hay efecto grande'}
 ```
 
-## Cumplimiento requisitos ANOVAM
-
-
-```{r, eval= ANOVAm}
-par(mfrow = c(1,2))
-plot(anova_2vias)
-```
-
-
 # Analisis Discriminante Lineal (LDA) 
 
 ```{r}
@@ -479,9 +470,11 @@ b 223 127 51
 b 208 125 50
 b 199 124 46
 ")
-datos <- read.table(textConnection(input), header = TRUE)
+#datos <- read.table(textConnection(input), header = TRUE)
 #datos = iris
-# factorizo variable factor
+datos = readxl::read_xlsx("gorriones.xlsx") %>% 
+  select(-Pájaro)
+#factorizo variable factor
 datos[[{{variable_factor_lda}}]] = as.factor(datos[[{{variable_factor_lda}}]]) 
 # resumente datos
 str(datos)
@@ -501,7 +494,7 @@ par(xpd = TRUE)
 legend("bottomright", fill = unique(datos[[{{variable_factor_lda}}]]), legend = c(levels(datos[[{{variable_factor_lda}}]])))
 ```
 
-<!-- Ver qué par de variables separa bien las `r variable_factor_lda ` -->
+Ver qué par de variables separa bien las `r variable_factor_lda `
 
 ## Homogeneidad de la Varianza: Histograma VariablexGrupo
 
@@ -514,11 +507,81 @@ for (k in 1:dim(temp)[2]) {
   for (i in 1:l) {
     i0 <- levels(datos[[{{variable_factor_lda}}]])[i]
     x <- temp[datos[[{{variable_factor_lda}}]] == i0, j0]
+    x = x[[1]]
     hist(x, proba = T, col = grey(0.8), main = paste(variable_factor_lda, i0),
     xlab = j0)
     lines(x0, dnorm(x0, mean(x), sd(x)), col = "red", lwd = 2)
   }
 }
+```
+
+## Medias de las variables por Grupo
+
+Las variables son muy parecidas. 
+
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  group_by(grupo, variables) %>% 
+  summarise(medias = round(mean(cantidad, na.rm=T), digits = 2)) %>%
+  #mutate(medias_scaled = scales::rescale(medias)) %>% 
+  ggplot(aes(x = variables, y = medias)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() +
+  facet_grid(. ~ grupo)
+```
+## Boxplot 
+
+### Boxplot todas las variables
+
+```{r, eval=LDA}
+datos %>% 
+  boxplot()
+```
+
+### Box por grupo
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  ggplot(aes(x=variables, y=cantidad, fill=grupo)) + 
+  geom_boxplot() +
+  facet_wrap(~grupo)
+```
+
+### Box por variable
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  ggplot(aes(x=variables, y=cantidad, fill=grupo)) + 
+  geom_boxplot() +
+  facet_wrap(~variables, scales = 'free')
+```
+
+## Vectores medios de ambos grupos
+
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  group_by(grupo, variables) %>% 
+  summarise(medias = round(mean(cantidad, na.rm=T), digits = 2)) 
+```
+
+Viendo los gráficos de las distribuciones de datos en las variables por grupo y los respectivos vectores medios no parece útil realizar un análisis discriminante. 
+
+## Subseleccionamos variables para el análisis
+
+Seleccionamos para el análisis las variables cuyas medias resultan más discriminantes: largo total y extension alar
+
+```{r, , eval=LDA}
+
+datos <- datos %>% 
+  select(1,2,6)
+
+temp = datos %>% select(1,2)
 ```
 
 ## Contraste de Normalidad Univariante Shapiro-Wilk
@@ -767,6 +830,9 @@ partimat(temp, datosQ[[{{variable_factor_qda}}]], method = "qda", prec = 200)
 
 <!-- Muy importante estandarizar datos -->
 
+
+
+
 ## Datos
 
 ```{r, eval=SVM}
@@ -775,17 +841,17 @@ partimat(temp, datosQ[[{{variable_factor_qda}}]], method = "qda", prec = 200)
 # https://www.cienciadedatos.net/documentos/34_maquinas_de_vector_soporte_support_vector_machines
 
 #Cambiar
-datos <- ISLR::OJ
-
-datos[[{{variable_factor_svm}}]] = as.factor(datos[[{{variable_factor_svm}}]])
+# datos <- ISLR::OJ
+# 
+# datos[[{{variable_factor_svm}}]] = as.factor(datos[[{{variable_factor_svm}}]])
 
 # Convierto variables predictoras tipo factor a numeric
-dat_f = datos %>% select(variable_factor_svm)
-dat_all =  datos %>%
-  select(-variable_factor_svm) %>%
-  mutate_if(is.factor, as.numeric)
-
-datos = dat_f %>% bind_cols(dat_all)
+# dat_f = datos %>% select(variable_factor_svm)
+# dat_all =  datos %>%
+#   select(-variable_factor_svm) %>%
+#   mutate_if(is.factor, as.numeric)
+# 
+# datos = dat_f %>% bind_cols(dat_all)
 
 # x=c(rnorm (50,5,2),rnorm(50,8,1.5),rnorm(50,1,1.2))
 # y=c(abs(rnorm(50,5,2)),rnorm(50,8,1.5),rnorm(50,1,1.2))
@@ -795,6 +861,9 @@ datos = dat_f %>% bind_cols(dat_all)
 # # Programar la elección de otros kernel???!!!!
 # kernel = "radial" 
 
+library(pacman)
+p_load("datasets")
+datos = iris
 # resumente datos
 str(datos)
 ```
@@ -806,6 +875,25 @@ datos %>%
   ggplot( aes(x = variable_factor_svm, y = ..count.., fill = datos[[{{variable_factor_svm}}]])) +
   geom_bar() 
 ```
+
+## Boxplot
+
+```{r, , eval=SVM}
+boxplot(datos)
+```
+
+### Box por variable
+
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', -variable_factor_svm) %>% 
+  rename(grupo = variable_factor_svm) %>% 
+  ggplot(aes(x=variables, y=cantidad, fill=grupo)) + 
+  geom_boxplot() +
+  facet_wrap(~variables, scales = 'free')
+```
+
+(a) Analice cuales valores medios son diferentes en las especies: petal length and width
 
 ```{r, eval=SVM}
 # Índices observaciones de entrenamiento
@@ -861,6 +949,283 @@ paste("Observaciones de test mal clasificadas:",
       100 * mean(datos_test[[{{variable_factor_svm}}]] != predicciones) %>% 
         round(digits = 4), "%")
 ```
+```{r, eval=SVM}
+paste("Observaciones de test bien clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] == predicciones) %>% 
+        round(digits = 4), "%")
+```
 
-# Regresión logística LR
+Los bien clasificados por especies son: 100% en setosa y virginica, y 90% en versicolor. El error en versicolor y virgínica es lógico porque son los grupos con mayor similitud en sus datos.
+
+# Analisis Discriminante Lineal (LDA) 
+
+```{r}
+# artículo: https://www.cienciadedatos.net/documentos/28_linear_discriminant_analysis_lda_y_quadratic_discriminant_analysis_qda#Ejemplo_datos_insectos
+```
+
+
+<!-- El Análisis Discriminante Lineal o Linear Discrimiant Analysis (LDA) es un método de clasificación supervisado de variables cualitativas en el que dos o más grupos son conocidos a priori y nuevas observaciones se clasifican en uno de ellos en función de sus características. -->
+
+<!-- Tres enfoques: -->
+<!-- - x verosimilitud/Fisher -->
+<!--     Implica tener un modelo de los datos donde se pueda establecer una línea de discriminación entre grupos. El problema se puede plantear como  -->
+<!--     la busqueda de maximizar la variabilidad entre los grupos en relacion al total de la varianza en los datos. En termino matriciales esto implica     -->
+<!--     la busqueda de proyectar las observaciones p-variadas sobre una dirección que maximice la separaciones entre los grupos. Parecido a PCA. -->
+<!-- - x distancia Mahalanobis -->
+<!-- - x Bayes/probabilidad a_posteriori -->
+
+<!-- # Requisitos    -->
+
+<!-- - Cada predictor que forma parte del modelo se distribuye de forma normal en cada una de las clases de la variable respuesta. En el caso de múltiples predictores, las observaciones siguen una distribución normal multivariante en todas las clases.    -->
+
+<!-- - La varianza del predictor es igual en todas las clases de la variable respuesta. En el caso de múltiples predictores, la matriz de covarianza es igual en todas las clases. Si esto no se cumple se recurre a Análisis Discriminante Cuadrático (QDA).     -->
+
+
+<!-- # LDA_1predictor vs LDA_multiples_predictores -->
+
+<!-- La diferencia reside en que X, en lugar de ser un único valor, es un vector formado por el valor de p predictores X=(X1,X2,...,X3) y que, en lugar de proceder de una distribución normal, procede de una distribución normal multivariante. -->
+
+<!-- Un vector sigue una distribución k-normal multivariante si cada uno de los elementos individuales que lo forman sigue una distribución normal y lo mismo para toda combinación lineal de sus k elementos. -->
+
+<!-- # LDA vs Regresion Logística -->
+
+<!-- Es una alternativa a la regresión logística cuando la variable cualitativa tiene más de dos niveles. Si bien existen extensiones de la regresión logística para múltiples clases, el LDA presenta una serie de ventajas: -->
+
+<!-- - Si las clases están bien separadas, los parámetros estimados en el modelo de regresión logística son inestables. El método de LDA no sufre este problema.     -->
+<!-- - Si el número de observaciones es bajo y la distribución de los predictores es aproximadamente normal en cada una de las clases, LDA es más estable que la regresión logística.    -->
+
+## Datos
+
+```{r, eval=LDA}
+variable_factor_lda = "Clase"
+datos = readxl::read_xlsx("barotro.xlsx") 
+#factorizo variable factor
+datos[[{{variable_factor_lda}}]] = as.factor(datos[[{{variable_factor_lda}}]]) 
+# resumente datos
+str(datos)
+```
+
+```{r, eval=LDA}
+temp <- datos %>% select(!{{variable_factor_lda}})
+l <- length(unique(datos[[{{variable_factor_lda}}]]))
+
+```
+
+## Explorando discriminación por pares de variable
+
+```{r, eval=LDA}
+pairs(x =temp, col =datos[[{{variable_factor_lda}}]], oma=c(3,3,3,15))
+par(xpd = TRUE)
+legend("bottomright", fill = unique(datos[[{{variable_factor_lda}}]]), legend = c(levels(datos[[{{variable_factor_lda}}]])))
+```
+
+Ver qué par de variables separa bien las `r variable_factor_lda `
+
+## Homogeneidad de la Varianza: Histograma VariablexGrupo
+
+<!-- ```{r, eval=LDA} -->
+<!-- par(mfcol = c(l, dim(temp)[2])) -->
+
+<!-- for (k in 1:dim(temp)[2]) { -->
+<!--   j0 <- names(temp)[k] -->
+<!--   x0 <- seq(min(temp[, k]), max(temp[, k]), le = 50) -->
+<!--   for (i in 1:l) { -->
+<!--     i0 <- levels(datos[[{{variable_factor_lda}}]])[i] -->
+<!--     x <- temp[datos[[{{variable_factor_lda}}]] == i0, j0] -->
+<!--     hist(x, proba = T, col = grey(0.8), main = paste(variable_factor_lda, i0), -->
+<!--     xlab = j0) -->
+<!--     lines(x0, dnorm(x0, mean(x), sd(x)), col = "red", lwd = 2) -->
+<!--   } -->
+<!-- } -->
+<!-- ``` -->
+
+## Medias de las variables por Grupo
+
+Las variables son muy parecidas. 
+
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  group_by(grupo, variables) %>% 
+  summarise(medias = round(mean(cantidad, na.rm=T), digits = 2)) %>%
+  #mutate(medias_scaled = scales::rescale(medias)) %>% 
+  ggplot(aes(x = variables, y = medias)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() +
+  facet_grid(. ~ grupo)
+```
+## Boxplot 
+
+### Boxplot todas las variables
+
+```{r, eval=LDA}
+datos %>% 
+  boxplot()
+```
+
+### Box por grupo
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  ggplot(aes(x=variables, y=cantidad, fill=grupo)) + 
+  geom_boxplot() +
+  facet_wrap(~grupo)
+```
+
+### Box por variable
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  ggplot(aes(x=variables, y=cantidad, fill=grupo)) + 
+  geom_boxplot() +
+  facet_wrap(~variables, scales = 'free')
+```
+## Histogramas
+
+```{r, eval=LDA}
+temp <- datos %>% select(!{{variable_factor_lda}})
+l <- length(unique(datos[[{{variable_factor_lda}}]]))
+par(mfcol = c(l, dim(temp)[2])) 
+for (k in 1:dim(temp)[2]) {
+  j0 <- names(temp)[k]
+  x0 <- seq(min(temp[, k]), max(temp[, k]), le = 50)
+  for (i in 1:l) {
+    i0 <- levels(datos[[{{variable_factor_lda}}]])[i]
+    x <- temp[datos[[{{variable_factor_lda}}]] == i0, j0]
+    x = x[[1]]
+    hist(x, proba = T, col = grey(0.8), main = paste(variable_factor_lda, i0),
+    xlab = j0)
+    lines(x0, dnorm(x0, mean(x), sd(x)), col = "red", lwd = 2)
+  }
+}
+```
+
+
+
+
+
+## Vectores medios de ambos grupos
+
+```{r, eval=LDA}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  group_by(grupo, variables) %>% 
+  summarise(medias = round(mean(cantidad, na.rm=T), digits = 2)) 
+```
+
+## Contraste de Normalidad Univariante Shapiro-Wilk
+
+```{r, eval=LDA}
+datos_tidy <- melt(datos, value.name = "valor")
+datos_tidy_test <- datos_tidy %>% group_by(datos_tidy[[{{variable_factor_lda}}]], variable) %>% summarise(p_value_Shapiro.test = round(shapiro.test(valor)$p.value, digits = 5))
+kableExtra::kable(datos_tidy_test)
+```
+
+```{r, eval=LDA, class.output="bg-warning"}
+if(any(datos_tidy_test$p_value_Shapiro.test < 0.05)){'H0 debe rechazarse: hay evidencia de falta de normalidad en los siguientes casos'} else {'No hay evidencia de falta de normalidad univariante en ninguna variable predictora por grupo'}
+datos_tidy_test[datos_tidy_test$p_value_Shapiro.test < 0.05, ]
+
+```
+
+## Contraste de Normalidad MultiVariante
+
+### Outliers
+
+```{r, eval=LDA}
+outliers <- mvn(data =temp, mvnTest = "hz", multivariateOutlierMethod = "quan")
+```
+
+### Test de Royston
+
+```{r, eval=LDA}
+royston_test <- mvn(data = temp, mvnTest = "royston", multivariatePlot = "qq")
+royston_test$multivariateNormality
+```
+
+```{r, eval=LDA, class.output="bg-warning"}
+# N tiene que ser > 3 y < a 5000
+if(any(royston_test$multivariateNormality$MVN == "NO")){'H0 debe rechazarse: falta de normalidad multivariante a nivel de significancia 0.05'} else {'No hay evidencia de falta de normalidad multivariante a nivel de significancia 0.05'}
+```
+
+### Test de Henze-Zirkler
+
+```{r, eval=LDA}
+hz_test <- mvn(data = temp, mvnTest = "hz")
+hz_test$multivariateNormality
+```
+
+```{r, eval=LDA, class.output="bg-warning"}
+if(any(hz_test$multivariateNormality$MVN == "NO")){'H0 debe rechazarse: falta de normalidad multivariante a nivel de significancia 0.05'} else {'No hay evidencia de falta de normalidad multivariante a nivel de significancia 0.05 '}
+```
+
+## Contraste de Matriz de Covarianza
+
+```{r, eval=LDA}
+library(biotools)
+boxmtest =  boxM(data = temp, grouping = datos[[{{variable_factor_lda}}]])
+boxmtest
+```
+
+```{r, eval=LDA, class.output="bg-warning"}
+if(boxmtest$p.value < 0.05){'H0 debe rechazarse: hay evidencia de que la covarianza no es igual en todos los grupos'} else {'Se puede aceptar que la matriz de covarianza es igual en todos los grupos'}
+```
+
+## Estimación de parámetros de la función de densidad (u^(X),E) y cálculo de la función discriminante según aproximación de Fisher via lda()
+
+```{r, eval = LDA}
+modelo_lda <- lda(temp, datos[[{{variable_factor_lda}}]])
+```
+
+```{r, eval= LDA}
+modelo_lda
+```
+
+`r if (LDA & !is.na(valores_lda_nvaobs)) '## Clasificacion de la nueva observacion'`
+
+```{r, eval= LDA & !is.na(valores_lda_nvaobs)}
+columnas = colnames(temp)
+nueva_observacion <- rbind(columnas, valores_lda_nvaobs)
+nueva_observacion <- nueva_observacion %>% 
+  janitor::row_to_names(row_number = 1)
+nueva_observacion <- nueva_observacion %>% as_tibble() %>% mutate_if(is.character, as.numeric)
+predict(object = modelo_lda, newdata = nueva_observacion)
+```
+
+<!-- El resultado muestra, según la función discriminante, la probabilidad posterior por grupo -->
+
+## Evaluación del error: Accuracy Table
+
+```{r, eval=LDA}
+predicciones <- predict(object = modelo_lda, newdata = temp, method = "predictive")
+
+table(datos[[{{variable_factor_lda}}]], predicciones$class, dnn = c("Clase real", "Clase predicha"))
+
+
+```
+
+```{r, eval=LDA}
+trainig_error <- mean(datos[[{{variable_factor_lda}}]] != predicciones$class) * 100
+paste("trainig_error =", trainig_error, "%")
+```
+
+## Visualización de las clasificaciones
+
+```{r, eval=LDA}
+partimat(temp, datos[[{{variable_factor_lda}}]], method = "lda", prec = 200)
+```
+
+
+El test no parece significativo, las observaciones son linealmente separables. No hay normalidad univariante según el Test de Shapiro.
+
+
+
+##### ARMAR CON VARIOS KERNELS!!!!
+##### ingenuo no CROSVALIDATION!!!
+##### lda O qDA ROBUSTO! VER CUANDO: ELEGIR MATRIZ CON VARIANZA EN FORMA ROBUSTA.
+
+
 
