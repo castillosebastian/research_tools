@@ -1,0 +1,296 @@
+---
+title: "Auxiliar"
+author: "Sebastian Castillo"
+date: '2022-05-13'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F, comment=NA )
+knitr::opts_chunk$set(fig.align = 'center')
+source("Unidad0_repos_and_tools.R")
+
+```
+
+# T-test:
+
+Medias iguales 2 poblaciones (independencia+normalidad+homosedasticidad/=varianza)
+
+El t-test es un test estadístico paramétrico que permite contrastar la hipótesis nula de que las medias de dos poblaciones son iguales, frente a la hipótesis alternativa de que no lo son.
+
+Independencia: Las observaciones tienen que ser independientes las unas de las otras. Para ello, el muestreo debe ser aleatorio y el tamaño de la muestra inferior al 10% de la población. (Existe una adaptación de t-test para datos pareados)
+
+Normalidad: Las poblaciones que se comparan tienen que seguir una distribución normal. Si bien la condición de normalidad recae sobre las poblaciones, no se suele disponer de información sobre ellas, por lo que se emplean las muestras (dado que son reflejo de la población) para determinarlo. En caso de cierta asimetría, los t-test son considerablemente robustos si el tamaño de las muestras es mayor o igual a 30.
+
+Igualdad de varianza (homocedasticidad): la varianza de las poblaciones comparadas debe de ser igual. Tal como ocurre con la condición de normalidad, si no se dispone de información de las poblaciones, esta condición se ha de asumir a partir de las muestras. En caso de no cumplirse esta condición se puede emplear un Welch Two Sample t-test, que incorpora una corrección a través de los grados de libertad que compensa la diferencia de varianzas, con el inconveniente de que pierde poder estadístico.
+
+Si bien es cierto que el t-test requiere como condición que las poblaciones de origen sigan una distribución normal, a medida que se incrementa el tamaño de las muestras se vuelve menos sensible al no cumplimiento de esta condición.
+
+```{r}
+gr1 = c(55,65,76,89,86,78,90,76,49,89,99,78,67,78,90,99,65,66)
+gr2 = c(59,69,76,89,90,87,97,80,58,98,92,87,67,79,91,98,69,76) 
+```
+
+## Normalidad
+
+Ahora hay que comprobar si nuestros datos son normales, para ello se realiza el test de Shapiro en donde H0=datos son normales, es decir si p es menor de 0.05 los datos no son normales:
+
+```{r}
+shapiro.test(gr1)
+```
+
+```{r}
+shapiro.test(gr2)
+```
+
+```{r}
+qqnorm(gr1)
+qqline(gr1)
+```
+
+```{r}
+qqnorm(gr2)
+qqline(gr2)
+```
+
+## Homocedasticidad de varianzas
+
+```{r}
+var.test(gr1,gr2)
+```
+
+## T-test
+
+```{r}
+ttresult = t.test(
+  x           = gr1,
+  y           = gr2,
+  alternative = "two.sided",
+  mu          = 0,
+  var.equal   = TRUE,
+  conf.level  = 0.95
+)
+
+ttresult
+```
+
+
+```{r, class.output="bg-warning"}
+if(ttresult$p.value<0.05){'H0 debe rechazarse, los grupos son distintos a nivel de significancia 0.05'} else{'No hay evidencia para rechazar H0'}
+
+```
+
+# Test No paramétricos 
+
+Test no parametricos. 
+```{r}
+
+```
+
+## Mann-Whitney-Wilcoxon
+
+<!-- Dos modalidades  -->
+<!-- 1. Se asume que los datos vienen de las mismas distribuciones con medianas iguales. La hipótesis nula es precisamente que las medianas son iguales. -->
+<!-- 2. Se plantea que las poblaciones pueden ser distintas y por lo tanto H0 es que las distribuciones son iguales.  -->
+
+<!-- En un caso probamos la mediana y en otro la distribucion. -->
+
+
+
+```{r}
+nn1 = c(55,0,76,89,186,0,0,76,49,2,29,78,67,78,0,99,15,166)
+nn2 = c(0,2,76,89,0,87,97,0,58,98,92,87,67,179,1,98,69,6) 
+```
+
+```{r}
+qqnorm(nn1)
+qqline(nn1)
+```
+
+
+```{r}
+qqnorm(nn2)
+qqline(nn2)
+```
+
+Idenpendientes
+
+```{r}
+wilcox =  wilcox.test(nn1,nn2, correct=FALSE, exact=FALSE)
+```
+
+
+```{r, class.output="bg-warning"}
+if(wilcox$p.value<0.05){'H0 debe rechazarse, las distribuciones poblacionales no son iguales a nivel de significancia 0.05'} else{'No hay evidencia significativa para rechazar H0'}
+
+```
+
+Debemos tener en cuenta que en este caso, el test de Mann-Whitney-Wilcoxon no es un test para el parámetro de posición. Por lo tanto, si rechazamos la hipótesis nula, podemos concluir que las distribuciones difieren pero no sabemos de qué modo difieren. Cuando interesa el parámetro de posición se emplea el test de la mediana.
+
+Pareados
+
+```{r}
+wilcox.test(nn1,nn2, correct=FALSE, exact=FALSE, paired=TRUE)
+```
+
+Si queremos comparar cada grupo con respecto a cero entonces (con mu podemos testar otros valores):
+
+```{r}
+wilcox.test(nn1, mu=0, alternative="two.sided")
+```
+
+
+```{r}
+wilcox.test(nn2, mu=0, alternative="two.sided")
+```
+
+## Test de las mediana
+
+```{r}
+mood.test(nn1,nn2,exact = FALSE)
+```
+
+## Test de Hotelling
+
+Compara los vectores medios de dos grupos, asumiendo varianzas iguales y un nivel de confianza del 95%.
+
+```{r}
+df <- read_csv("~/R/research_tools/utn_analisis_inteligente_datos/hotelling.csv")
+```
+
+## Normalidad multivariada test
+
+```{r}
+data.vars <- df %>% dplyr::select(-one_of("Group"))
+mvnort = mvnormtest::mshapiro.test(t(data.vars))
+mvnort
+```
+
+```{r, class.output="bg-warning"}
+if(mvnort$p.value<0.05){'H0 debe rechazarse, los datos no tiene distribución normal multivariada'} else{'No hay evidencia significativa para rechazar H0, los datos tienen distribución normal'}
+
+```
+
+```{r}
+det = det(cov(data.vars)) 
+```
+
+```{r, class.output="bg-warning"}
+if(det>=1){'el determinante de la matriz de covarianza es positivo'}else{'no se cumple el requisito de positividad del determinante de la matriz de covarianza'}
+```
+
+```{r}
+fit <- Hotelling::hotelling.test(filter(df,Group == "I")[, 1:3],
+                                 filter(df,Group == "II")[, 1:3])
+fit
+```
+
+```{r, class.output="bg-warning"}
+if(fit$pval<0.05){'H0 debe rechazarse,'} else{'No hay evidencia significativa para rechazar H0, luego no hay diferencia significativa entre los grupos'}
+```
+
+<!-- El estadístico de contraste del test de Hotelling aplicando la función de R, para contrastar pa- -->
+<!-- ralelismo de los perfiles resultó que no hay evidencia a favor de la hipótesis de paralelismo con un nivel del 5%. -->
+
+<!-- Se utiliza el estadístico de contraste del test de Hotelling para probar la igualdad de medias y se concluye que las diferencias entre los vectores medios de ambos grupos resultaron estadísticamente signiﬁcativas con un nivel del 5% (con un p-valor de 0,00029). -->
+
+
+```{r}
+qf(0.5, 3, 26, lower.tail = FALSE)
+```
+
+# Grafico Comparacion de medias univariadas
+
+```{r}
+iris %>% 
+  ggplot(aes(iris$Species, Petal.Length)) +
+  geom_boxplot() + # dibujamos el diagrama de cajas
+  stat_summary(fun.y=mean, geom="point", shape=18, size=3, color="red")
+```
+
+# Grafico Comparacion de medias multivariadas
+
+```{r}
+iris %>% 
+  pivot_longer(names_to = "variable", values_to = "value", - Species ) %>% 
+  ggplot(aes(x = as.factor(variable), y=value, fill = Species)) +
+  geom_boxplot() + # dibujamos el diagrama de cajas
+  stat_summary(fun.y=mean, geom="point", shape=18, size=3, color="red") +
+  facet_grid(.~Species, scales="free", space="free_x") +
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(title="Boxplot y Medias por grupos",
+        x ="Variables", y = "Valores")
+  
+```
+
+```{r}
+datos <- read_delim("avispas.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+datos %>% 
+  pivot_longer(names_to = "variable", values_to = "value", - especie ) %>% 
+  ggplot(aes(x = as.factor(variable), y=value, fill = especie)) +
+  geom_boxplot() + # dibujamos el diagrama de cajas
+  stat_summary(fun.y=mean, geom="point", shape=18, size=3, color="red") +
+  facet_grid(.~especie, scales="free", space="free_x") +
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(title="Boxplot y Medias por grupos",
+        x ="Variables", y = "Valores")
+  
+```
+
+
+
+# Escribir hipotesis nula
+$$N(\mu, \sigma^2)$$
+# Calculamos vectores medios
+
+```{r}
+#Obtenemos el vector de medias
+media = colMeans(iris %>% select_if(is.numeric))
+media
+```
+
+# Calculo vectores medios por grupo
+
+```{r}
+datos = readxl::read_xlsx("gorriones.xlsx") %>% 
+  rename(sobrevida = 7)
+# iris %>%
+#   group_by(Species) %>%
+#   summarise_all(funs(mean(., na.rm=TRUE)))
+datos %>%
+  group_by(sobrevida) %>%
+  summarise_all(funs(mean(., na.rm=TRUE)))
+
+```
+
+
+
+
+# Estandarizar matriz de datos
+
+```{r}
+iris %>% 
+  select_if(is.numeric) %>% 
+  mutate_all(scale)
+```
+
+# Calculo de distancias de mahalanobis para observaciones p-variadas (observaciones)
+
+```{r}
+data = iris %>% select_if(is.numeric)
+data$mahalanobis = mahalanobis(data, colMeans(data), cov(data))
+```
+
+# Mahalanobis outlier
+
+```{r}
+nvar = dim(data)[2]-1
+data$pvalue <- pchisq(data$mahalanobis, df=nvar, lower.tail=FALSE)
+#Para detectar los datos atipicos, filtramos el dataframe dmahalanobisp por la filas cuya probabilidad sean menores a 0.001.
+#Detectando los vectores atipicos p < 0.001
+options(digits = 4)
+data %>% 
+  filter(pvalue < 0.001)
+```
+
