@@ -109,6 +109,7 @@ Clustering = params$Clustering
 Regresion_Logistica = params$Regresion_Logistica
 variable_factor_lr = params$categoriesLR
 PCA = params$PCA
+set.seed(1234)
 ```
 
 ```{r, tools}
@@ -153,6 +154,8 @@ multieda <- function(list, df = 1){
 #   rstatix::identify_outliers('Sepal.Width')
 
 ```
+
+<!-- -Parametrizar chunks: EDAmultiplot, testHotelling,  -->
 
 # Pregunta1
 ## EDA
@@ -227,7 +230,7 @@ eda_list[[dataset]][,-1] %>%
 <!-- -Visualizar -->
 
 <!-- coefciente de variacion: porcentaje, cuando más bajo sea el valor porcentual del CV menor dispersión se encuentran en los datos. -->
-<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
+<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha. IMPORTANTE pues la asimetría sugiere falta de normalidad ) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
 <!-- La desviación media absoluta (DMA o MAD por sus siglas en inglés) de un conjunto de datos es la distancia promedio entre cada valor y el promedio. La desviación media absoluta es una manera de describir la variación en un conjunto de datos. -->
 
 \pagebreak

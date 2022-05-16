@@ -228,7 +228,7 @@ eda_list[[dataset]][,-1] %>%
 <!-- -Visualizar -->
 
 <!-- coefciente de variacion: porcentaje, cuando más bajo sea el valor porcentual del CV menor dispersión se encuentran en los datos. -->
-<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
+<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha. IMPORTANTE pues la asimetría sugiere falta de normalidad ) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
 <!-- La desviación media absoluta (DMA o MAD por sus siglas en inglés) de un conjunto de datos es la distancia promedio entre cada valor y el promedio. La desviación media absoluta es una manera de describir la variación en un conjunto de datos. -->
 
 \pagebreak
@@ -675,6 +675,45 @@ datos %>%
   stat_summary(fun.y=mean, geom="point", shape=18, size=3, color="red") +
   facet_wrap(~variables, scales = 'free')
 ```
+<!-- ## Importancia de la diferencias: Test de Hotelling -->
+
+<!-- <!-- Compara los vectores medios de dos grupos, asumiendo varianzas iguales y un nivel de confianza del 95%. --> -->
+
+<!-- ## Normalidad multivariada test -->
+
+<!-- ```{r} -->
+<!-- data.vars <- datos %>% dplyr::select_if(is.numeric) -->
+<!-- mvnort = mvnormtest::mshapiro.test(t(data.vars)) -->
+<!-- mvnort -->
+<!-- ``` -->
+
+<!-- ```{r, class.output="bg-warning"} -->
+<!-- if(mvnort$p.value<0.05){'H0 debe rechazarse, los datos no tiene distribución normal multivariada'} else{'No hay evidencia significativa para rechazar H0, los datos tienen distribución normal'} -->
+
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- det = det(cov(data.vars))  -->
+<!-- ``` -->
+
+<!-- ```{r, class.output="bg-warning"} -->
+<!-- if(det>=1){'el determinante de la matriz de covarianza es positivo'}else{'no se cumple el requisito de positividad del determinante de la matriz de covarianza'} -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- fit <- Hotelling::hotelling.test(filter(datos,especie == "a")[, 2:3], -->
+<!--                                  filter(datos,especie == "b")[, 2:3]) -->
+<!-- fit -->
+<!-- ``` -->
+
+<!-- ```{r, class.output="bg-warning"} -->
+<!-- if(fit$pval<0.05){'H0 debe rechazarse, las medias de los grupos son significativamente distintas'} else{'No hay evidencia significativa para rechazar H0, no hay diferencia significativa entre los vectores medios de los grupos'} -->
+<!-- ``` -->
+
+<!-- <!-- El estadístico de contraste del test de Hotelling aplicando la función de R, para contrastar paralelismo de los perfiles resultó que no hay evidencia a favor de la hipótesis de paralelismo con un nivel del 5%. --> -->
+
+<!-- <!-- Se utiliza el estadístico de contraste del test de Hotelling para probar la igualdad de medias y se concluye que las diferencias entre los vectores medios de ambos grupos resultaron estadísticamente signiﬁcativas con un nivel del 5% (con un p-valor de 0,00029). --> -->
+
 
 ```{r,  eval=(LDA | AI)}
 set.seed(1999)
@@ -713,7 +752,7 @@ legend("bottomright", fill = unique(train[[{{variable_factor_lda}}]]), legend = 
 
 <!-- Ver qué par de variables separa bien las `r variable_factor_lda ` -->
 
-## Homogeneidad de la Varianza: Histograma VariablexGrupo
+## Histograma VariablexGrupo
 
 ```{r, eval=(LDA | AI)}
 par(mfcol = c(l, dim(temp)[2]))
@@ -757,6 +796,13 @@ train_tidy_test[train_tidy_test$p_value_Shapiro.test < 0.05, ]
 <!-- Mahalanobis distance (default) and "adj" adjusted quantile method based on -->
 <!-- Mahalanobis distance -->
 
+<!-- 8. Valores atípicos multivariantes (Multivariate outliers) -->
+
+<!-- Los valores atípicos multivariados son la razón común para violar la suposición de MVN. En otras palabras, la suposición de MVN requiere la ausencia de valores atípicos multivariados. Por lo tanto, es crucial verificar si los datos tienen valores atípicos multivariantes, antes de comenzar con el análisis multivariado. La MVN incluye dos métodos de detección de valores atípicos multivariados que se basan en distancias robustas de Mahalanobis (rMD (x)). La distancia de Mahalanobis es una métrica que calcula qué tan lejos está cada observación del centro de distribución de la articulación, que se puede considerar como el centroide en el espacio multivariable. Las distancias robustas se estiman a partir de estimadores determinantes de covarianza mínima en lugar de la covarianza de la muestra [7]. Estos dos enfoques, definidos como la distancia Mahalanobis y la distancia Mahalanobis ajustada en el paquete, detectan valores atípicos multivariados como se indica a continuación, -->
+
+<!-- El argumento multivariateOutlierMethod como “quan” para el método de cuantiles basado en la distancia de Mahalanobis y como “adj” para el método cuantil ajustado basado en la distancia de Mahalanobis para detectar valores atípicos multivariados como se indica a continuación. También devuelve un nuevo conjunto de datos en el que se eliminan los valores atípicos declarados. Además, este argumento crea gráficos Q-Q para la inspección visual de los posibles valores atípicos. -->
+
+
 ```{r, eval=(LDA | AI)}
 outliers <- MVN::mvn(data =temp, mvnTest = "hz", multivariateOutlierMethod = "quan")
 ```
@@ -791,10 +837,10 @@ hz_test$multivariateNormality
 if(any(hz_test$multivariateNormality$MVN == "NO")){'H0 debe rechazarse: falta de normalidad multivariante a nivel de significancia 0.05'} else {'No hay evidencia de falta de normalidad multivariante a nivel de significancia 0.05 '}
 ```
 
-## Contraste de Matriz de Covarianza para testear Homosedasticidad
+## Contraste Homosedasticidad 
+### Test sobre Matriz de Covarianza
 
-<!-- Este test es sensible a la falta de normalidad. Es decir matrices iguales pueden resultar significativamente distintas por el -->
-<!-- hecho de no cumplirse el supuesto de normalidad. -->
+<!-- Este test es sensible a la falta de normalidad. Es decir matrices iguales pueden resultar significativamente distintas por el  hecho de no cumplirse el supuesto de normalidad. -->
 
 ```{r, eval=(LDA | AI)}
 library(biotools)
@@ -803,8 +849,12 @@ boxmtest
 ```
 
 ```{r, eval=(LDA | AI), class.output="bg-warning"}
-if(boxmtest$p.value < 0.05){'H0 debe rechazarse: hay evidencia de que la covarianza no es igual en todos los grupos'} else {'La matriz de covarianza es igual en todos los grupos,no se rechaza la homocedasticidad'}
+if(boxmtest$p.value < 0.05){'H0 debe rechazarse: hay evidencia de que la covarianza no es igual en todos los grupos'} else {'No se rechaza H0:la matriz de covarianza es igual en los grupos, hay homocedasticidad'}
 ```
+
+### Test de Levene
+
+<!-- Mas robusto que el test M de Box -->
 
 ```{r, eval=(LDA | AI)}
 levenetest = heplots::leveneTests(temp, train[[{{variable_factor_lda}}]], center = median)
@@ -812,7 +862,7 @@ levenetest
 ```
 
 ```{r, eval=(LDA | AI)}
-if(any(levenetest$`Pr(>F)`<0.05)){'H0 debe rechazarse: no se cumple supuesto de homosedasticidad'} else {'No hay evidencia para rechazar H0, luego los datos son homosedásticos'}
+if(any(levenetest$`Pr(>F)`<0.05)){'H0 debe rechazarse: no se cumple supuesto de homosedasticidad.Intentar QDA'} else {'No hay evidencia para rechazar H0, luego los datos son homosedásticos'}
 ```
 
 ## Estimación de parámetros de la función de densidad y cálculo de la función discriminante según aproximación de Fisher via lda()
@@ -1029,7 +1079,7 @@ predict(object = modelo_qda, newdata = nueva_observacion)
 
 <!-- El resultado muestra, según la función discriminante, la probabilidad posterior por grupo -->
 
-## Evaluación del error: Accuracy Table
+## Evaluación del error en test set: Accuracy Table
 
 ```{r, eval=(QDA | AI)}
 temp_test <- test %>% select(!{{variable_factor_qda}})
