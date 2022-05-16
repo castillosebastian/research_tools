@@ -1,0 +1,403 @@
+---
+title: 'Análisis Inteligente de Datos: Segundo Parcial'
+author: "Claudio Sebastián Castillo"
+date: "`r format(Sys.Date(), '%d de %B de %Y') `"
+output:
+  pdf_document: 
+    number_sections: true
+    toc: true 
+    toc_depth: 3  
+linestretch: 1
+params:
+  AnalisisIntegrador: no
+  EDA: no
+  ANOVA: no
+  values:
+    label: Variable numerica
+    input: text
+    value: ''
+  categories:
+    label: Variable categorica o factor
+    input: text
+    value: ''
+  ctranformacion: no
+  ANOVA_multivar: no
+  categorieANOVAm:
+    label: Variable categorica o factor
+    input: text
+    value: ''
+  LDA: no
+  categoriesLDA:
+    label: 'LDA: Variable categorica o factor'
+    input: text
+    value: ''
+  valores_lda_nvaobs:
+    label: Valores de la nueva observaciones a clasificar
+    input: text
+    value: ''
+  QDA: no
+  categoriesQDA:
+    label: 'QDA: Variable categorica o factor'
+    input: text
+    value: ''
+  valores_qda_nvaobs:
+    label: Valores de la nueva observaciones a clasificar
+    input: text
+    value: ''
+  Regresion_Logistica: no
+  categoriesLR:
+    label: 'RL Variable categorica o factor'
+    input: text
+    value: ''
+  SVM: no
+  categoriesSVM:
+    label: 'SVM: Variable categorica o factor'
+    input: text
+    value: ''
+  valores_SVM_nvaobs:
+    label: Valores de la nueva observaciones a clasificar
+    input: text
+    value: ''
+  Clustering: no
+  PCA: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F, comment=NA )
+knitr::opts_chunk$set(fig.align = 'center')
+source("Unidad0_repos_and_tools.R")
+
+# PARA EL EXAMEN:
+#   -Trabjar en ejercicios al final del documento
+#   -Armar los análisis en bloque con test disponibles pre-armados
+#   -Convertir todos los objetos del ambiente y avanzar en orden ascentende estricto por chunk:
+#       IMPORTANTE: bases de datos!
+#   -Ejecutar con parametro 'AI' que correrá todo los chunks prearmados más los introducidos en el examen sin eval condicional
+
+# Comparacion de medias en el caso univariado
+# Comparacion de medias en el caso multivariado
+
+```
+
+```{r, params}
+AI = params$AnalisisIntegrador
+EDA = params$EDA
+ANOVA = params$ANOVA
+variable_numerica = params$values
+variable_factor = params$categories
+ctranformacion = params$ctranformacion
+options(scipen = 999) # inhabilito notacion científica
+ANOVAm = params$ANOVA_multivar
+variable_factor_anovam = params$categorieANOVAm
+LDA = params$LDA
+variable_factor_lda = params$categoriesLDA
+if (params$valores_lda_nvaobs == ''){
+  valores_lda_nvaobs <- NA
+} else {
+ valores_lda_nvaobs =  unlist(stringr::str_split(params$valores_lda_nvaobs, ","))
+}
+QDA = params$QDA
+variable_factor_qda = params$categoriesQDA
+if (params$valores_qda_nvaobs == ''){
+  valores_qda_nvaobs <- NA
+} else {
+ valores_qda_nvaobs =  unlist(stringr::str_split(params$valores_qda_nvaobs, ","))
+}
+SVM = params$SVM
+variable_factor_svm = params$categoriesSVM
+Clustering = params$Clustering
+Regresion_Logistica = params$Regresion_Logistica
+variable_factor_lr = params$categoriesLR
+PCA = params$PCA
+```
+
+```{r, tools}
+multieda <- function(list, df = 1){
+  
+  lista_resultados <- list()
+  
+  # CV = proporcion que representa el desvıo estandar de la media aritmetica
+  lista_resultados$coeficiente_variacion <- list[[df]] %>% 
+    dplyr::select_if(is.numeric) %>% 
+    summarise_all(raster::cv, na.rm =T) 
+  
+  lista_resultados$sesgo <- list[[df]] %>% 
+    dplyr::select_if(is.numeric) %>% 
+    summarise_all(moments::skewness) 
+  
+  # Las distribuciones leptocurticas tienen coeficientes superiores a 3 y las
+  # platicurticas coeficientes menores a 3
+  
+  lista_resultados$curtosis <- list[[df]] %>% 
+    dplyr::select_if(is.numeric) %>% 
+    summarise_all(moments::kurtosis)
+  
+  # Estadística Robusta
+  
+  # Median Absolute Deviation= mediana de los desvıos absolutos respecto de la mediana
+  lista_resultados$mad <- list[[df]] %>% 
+    dplyr::select_if(is.numeric) %>% 
+    summarise_all(mad)
+  
+  # grafico de correlacion
+  lista_resultados$m_correlacion <- list[[df]] %>%
+    select_if(is.numeric) %>% 
+    cor(., use="complete.obs") %>% 
+    round(., 2) 
+  
+  lista_resultados
+}
+
+# Outlier detection
+# iris %>%
+#   rstatix::identify_outliers('Sepal.Width')
+
+```
+
+# Pregunta1
+## EDA
+
+```{r, eval= (EDA | AI)}
+eda_list <- list()
+eda_list$avispas <- read_delim("avispas.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+dataset = 1
+results = multieda(eda_list, dataset)
+```
+
+### structure
+
+```{r, eval= (EDA | AI)}
+str(eda_list[[dataset]])
+```
+
+### Summary
+
+```{r, eval= (EDA | AI)}
+summary(eda_list[[dataset]]) #%>% 
+  # kable() %>% 
+  # kable_styling(full_width = F, font_size = 9) %>% 
+  # row_spec(0, angle = 90)
+```
+
+### Control NAs
+
+```{r, eval= (EDA | AI)}
+eda_list[[dataset]] %>%
+  purrr::map_df(function(x) sum(is.na(x))) %>% head
+```
+
+### Distribución de datos
+
+```{r, eval= (EDA | AI), fig.align='center'}
+knit_print(results)
+```
+
+<!-- Las medianas se encuentran cerca de las medias? Si es así podemos pensar que no hay outliers evaluando cada variable por separado, a no ser que haya enmascaramiento. Ver outliers multivariados. -->
+
+### Grafico Correlaciones
+
+```{r}
+corrplot.mixed(results$m_correlacion, order = 'AOE')
+```
+
+### Boxplot variables numericas
+
+```{r, eval= (EDA | AI)}
+boxplot(eda_list[[dataset]] %>% select_if(is.numeric))
+    
+```
+
+<!-- Hay outliers univariados? -->
+
+### Multigráficos
+
+```{r, eval= (EDA | AI), fig.width=20, fig.height=18}
+eda_list[[dataset]][,-1] %>%
+  GGally::ggpairs(., mapping = aes(color = as.factor(especie)), upper=list(wrap=list(size=20))) + ###### RENOMBRAR VARIABLE DE GRUPO
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme_bw()
+```
+
+<!-- Se grafica las relaciones del dataset, por grupos. En el cuadro del Grupo se observan las proporciones de observaciones.  Los boxplot muestras las distintas distribuciones por grupo y presencia de outliers univariados.Los dispersogramas muestras asociacioens en datos. En los histogramas y gráficos de densidad se ven las diferencias o no entre los grupos. Finalmente las correlaciones hablan de asociacicion: Las correlaciones de las variables numéricas no son fuertes o son fuertes?. -->
+
+<!-- Salidas: -->
+<!-- -is the data set 'tidy'      -->
+<!-- -Check whether or not there are any missing values       -->
+<!-- -Spend some time thinking about the variables in the data set. Which ones are relevant to the question in hand? If appropriate, decide which variable is the dependent variable (the ‘y’ variable) and which variable(s) is (are) the independent variable(s)? What kind of variables are we dealing with—ratio or interval scale numeric variables, ordinal or nominal categorical variables?.     -->
+<!-- -Visualizar -->
+
+<!-- coefciente de variacion: porcentaje, cuando más bajo sea el valor porcentual del CV menor dispersión se encuentran en los datos. -->
+<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
+<!-- La desviación media absoluta (DMA o MAD por sus siglas en inglés) de un conjunto de datos es la distancia promedio entre cada valor y el promedio. La desviación media absoluta es una manera de describir la variación en un conjunto de datos. -->
+
+\pagebreak
+## Respuestas 
+\pagebreak
+
+
+# Pregunta2
+## EDA
+
+```{r, eval= (EDA | AI)}
+eda_list <- list()
+eda_list$IMCinfantil <- readxl::read_excel("IMCinfantil.xlsx")
+dataset = 1
+results = multieda(eda_list, dataset)
+```
+
+### structure
+
+```{r, eval= (EDA | AI)}
+str(eda_list[[dataset]])
+```
+
+### Summary
+
+```{r, eval= (EDA | AI)}
+summary(eda_list[[dataset]]) #%>% 
+  # kable() %>% 
+  # kable_styling(full_width = F, font_size = 9) %>% 
+  # row_spec(0, angle = 90)
+```
+
+### Control NAs
+
+```{r, eval= (EDA | AI)}
+eda_list[[dataset]] %>%
+  purrr::map_df(function(x) sum(is.na(x))) %>% head
+```
+
+### Distribución de datos
+
+```{r, eval= (EDA | AI), fig.align='center'}
+knit_print(results)
+```
+
+<!-- Las medianas se encuentran cerca de las medias? Si es así podemos pensar que no hay outliers evaluando cada variable por separado, a no ser que haya enmascaramiento. Ver outliers multivariados. -->
+
+### Grafico Correlaciones
+
+```{r}
+corrplot.mixed(results$m_correlacion, order = 'AOE')
+```
+
+### Boxplot variables numericas
+
+```{r, eval= (EDA | AI)}
+boxplot(eda_list[[dataset]] %>% select_if(is.numeric))
+    
+```
+
+<!-- Hay outliers univariados? -->
+
+### Multigráficos
+
+```{r, eval= (EDA | AI), fig.width=20, fig.height=18}
+eda_list[[dataset]][,-1] %>%
+  GGally::ggpairs(., mapping = aes(color = as.factor(SEXO)), upper=list(wrap=list(size=20))) + ###### RENOMBRAR VARIABLE DE GRUPO
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme_bw()
+```
+
+<!-- Se grafica las relaciones del dataset, por grupos. En el cuadro del Grupo se observan las proporciones de observaciones.  Los boxplot muestras las distintas distribuciones por grupo y presencia de outliers univariados.Los dispersogramas muestras asociacioens en datos. En los histogramas y gráficos de densidad se ven las diferencias o no entre los grupos. Finalmente las correlaciones hablan de asociacicion: Las correlaciones de las variables numéricas no son fuertes o son fuertes?. -->
+
+<!-- Salidas: -->
+<!-- -is the data set 'tidy'      -->
+<!-- -Check whether or not there are any missing values       -->
+<!-- -Spend some time thinking about the variables in the data set. Which ones are relevant to the question in hand? If appropriate, decide which variable is the dependent variable (the ‘y’ variable) and which variable(s) is (are) the independent variable(s)? What kind of variables are we dealing with—ratio or interval scale numeric variables, ordinal or nominal categorical variables?.     -->
+<!-- -Visualizar -->
+
+<!-- coefciente de variacion: porcentaje, cuando más bajo sea el valor porcentual del CV menor dispersión se encuentran en los datos. -->
+<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
+<!-- La desviación media absoluta (DMA o MAD por sus siglas en inglés) de un conjunto de datos es la distancia promedio entre cada valor y el promedio. La desviación media absoluta es una manera de describir la variación en un conjunto de datos. -->
+
+\pagebreak
+## Respuestas 
+\pagebreak
+
+# Pregunta3
+## EDA
+
+```{r, eval= (EDA | AI)}
+eda_list <- list()
+eda_list$futbol <- readxl::read_excel("futbol.xlsx")
+dataset = 1
+results = multieda(eda_list, dataset)
+```
+
+### structure
+
+```{r, eval= (EDA | AI)}
+str(eda_list[[dataset]])
+```
+
+### Summary
+
+```{r, eval= (EDA | AI)}
+summary(eda_list[[dataset]]) #%>% 
+  # kable() %>% 
+  # kable_styling(full_width = F, font_size = 9) %>% 
+  # row_spec(0, angle = 90)
+```
+
+### Control NAs
+
+```{r, eval= (EDA | AI)}
+eda_list[[dataset]] %>%
+  purrr::map_df(function(x) sum(is.na(x))) %>% head
+```
+
+### Distribución de datos
+
+```{r, eval= (EDA | AI), fig.align='center'}
+knit_print(results)
+```
+
+<!-- Las medianas se encuentran cerca de las medias? Si es así podemos pensar que no hay outliers evaluando cada variable por separado, a no ser que haya enmascaramiento. Ver outliers multivariados. -->
+
+### Grafico Correlaciones
+
+```{r}
+corrplot.mixed(results$m_correlacion, order = 'AOE')
+```
+
+### Boxplot variables numericas
+
+```{r, eval= (EDA | AI)}
+boxplot(eda_list[[dataset]] %>% select_if(is.numeric))
+    
+```
+
+<!-- Hay outliers univariados? -->
+
+### Multigráficos
+
+```{r, eval= (EDA | AI), fig.width=20, fig.height=18}
+eda_list[[dataset]][,-1] %>%
+  GGally::ggpairs(., mapping = aes(color = as.factor(Campeón)), upper=list(wrap=list(size=20))) + ###### RENOMBRAR VARIABLE DE GRUPO
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme_bw()
+```
+
+<!-- Se grafica las relaciones del dataset, por grupos. En el cuadro del Grupo se observan las proporciones de observaciones.  Los boxplot muestras las distintas distribuciones por grupo y presencia de outliers univariados.Los dispersogramas muestras asociacioens en datos. En los histogramas y gráficos de densidad se ven las diferencias o no entre los grupos. Finalmente las correlaciones hablan de asociacicion: Las correlaciones de las variables numéricas no son fuertes o son fuertes?. -->
+
+<!-- Salidas: -->
+<!-- -is the data set 'tidy'      -->
+<!-- -Check whether or not there are any missing values       -->
+<!-- -Spend some time thinking about the variables in the data set. Which ones are relevant to the question in hand? If appropriate, decide which variable is the dependent variable (the ‘y’ variable) and which variable(s) is (are) the independent variable(s)? What kind of variables are we dealing with—ratio or interval scale numeric variables, ordinal or nominal categorical variables?.     -->
+<!-- -Visualizar -->
+
+<!-- coefciente de variacion: porcentaje, cuando más bajo sea el valor porcentual del CV menor dispersión se encuentran en los datos. -->
+<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
+<!-- La desviación media absoluta (DMA o MAD por sus siglas en inglés) de un conjunto de datos es la distancia promedio entre cada valor y el promedio. La desviación media absoluta es una manera de describir la variación en un conjunto de datos. -->
+
+\pagebreak
+## Respuestas 
+
+
+
+# Sesion
+```{r}
+sessionInfo()
+```
+

@@ -26,6 +26,13 @@ Igualdad de varianza (homocedasticidad): la varianza de las poblaciones comparad
 
 Si bien es cierto que el t-test requiere como condición que las poblaciones de origen sigan una distribución normal, a medida que se incrementa el tamaño de las muestras se vuelve menos sensible al no cumplimiento de esta condición.
 
+## Hipotesis nula y alternativa
+
+Hipótesis nula (H0): por lo general es la hipótesis escéptica, la que considera que no hay diferencia o cambio. Suele contener en su definición el símbolo =. En el caso de comparar dos medias independientes la hipótesis nula considera que μ1=μ2.
+
+Hipótesis alternativa (HA): considera que el valor real de la media poblacional es mayor, menor o distinto del valor que establece la Ho. Suele contener los símbolos >,<,≠. En el caso de comparar dos medias independientes la hipótesis alternativa considera queμ1≠μ2.
+
+
 ```{r}
 gr1 = c(55,65,76,89,86,78,90,76,49,89,99,78,67,78,90,99,65,66)
 gr2 = c(59,69,76,89,90,87,97,80,58,98,92,87,67,79,91,98,69,76) 
@@ -189,8 +196,7 @@ fit
 if(fit$pval<0.05){'H0 debe rechazarse,'} else{'No hay evidencia significativa para rechazar H0, luego no hay diferencia significativa entre los grupos'}
 ```
 
-<!-- El estadístico de contraste del test de Hotelling aplicando la función de R, para contrastar pa- -->
-<!-- ralelismo de los perfiles resultó que no hay evidencia a favor de la hipótesis de paralelismo con un nivel del 5%. -->
+<!-- El estadístico de contraste del test de Hotelling aplicando la función de R, para contrastar paralelismo de los perfiles resultó que no hay evidencia a favor de la hipótesis de paralelismo con un nivel del 5%. -->
 
 <!-- Se utiliza el estadístico de contraste del test de Hotelling para probar la igualdad de medias y se concluye que las diferencias entre los vectores medios de ambos grupos resultaron estadísticamente signiﬁcativas con un nivel del 5% (con un p-valor de 0,00029). -->
 
@@ -242,6 +248,8 @@ datos %>%
 
 # Escribir hipotesis nula
 $$N(\mu, \sigma^2)$$
+$$H_0 : \mu = $$
+
 # Calculamos vectores medios
 
 ```{r}
