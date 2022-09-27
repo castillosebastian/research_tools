@@ -66,17 +66,6 @@ params:
 knitr::opts_chunk$set(echo = F, warning = F, message = F, comment=NA )
 knitr::opts_chunk$set(fig.align = 'center')
 source("Unidad0_repos_and_tools.R")
-
-# PARA EL EXAMEN:
-#   -Trabjar en ejercicios al final del documento
-#   -Armar los análisis en bloque con test disponibles pre-armados
-#   -Convertir todos los objetos del ambiente y avanzar en orden ascentende estricto por chunk:
-#       IMPORTANTE: bases de datos!
-#   -Ejecutar con parametro 'AI' que correrá todo los chunks prearmados más los introducidos en el examen sin eval condicional
-
-# Comparacion de medias en el caso univariado
-# Comparacion de medias en el caso multivariado
-
 ```
 
 ```{r, params}
@@ -155,14 +144,12 @@ multieda <- function(list, df = 1){
 
 ```
 
-<!-- -Parametrizar chunks: EDAmultiplot, testHotelling,  -->
-
 # Pregunta1
 ## EDA
 
 ```{r, eval= (EDA | AI)}
 eda_list <- list()
-eda_list$avispas <- read_delim("avispas.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+eda_list$avispas <- df <- read_csv("materiales.csv")
 dataset = 1
 results = multieda(eda_list, dataset)
 ```
@@ -195,55 +182,71 @@ eda_list[[dataset]] %>%
 knit_print(results)
 ```
 
-<!-- Las medianas se encuentran cerca de las medias? Si es así podemos pensar que no hay outliers evaluando cada variable por separado, a no ser que haya enmascaramiento. Ver outliers multivariados. -->
-
-### Grafico Correlaciones
+### Vector de Medias
 
 ```{r}
-corrplot.mixed(results$m_correlacion, order = 'AOE')
+#Obtenemos el vector de medias
+media = colMeans(eda_list[[dataset]] %>% select(-Repeticion))
+media
+```
+### Datos sobre valores por Lote
+
+```{r}
+eda_list[[dataset]] %>% 
+  pivot_longer(names_to = "variable", values_to = "value", - Repeticion ) %>% 
+  ggplot(aes(x = as.factor(variable), y=value, fill = as.factor(variable))) +
+  geom_boxplot() + # dibujamos el diagrama de cajas
+  stat_summary(fun=mean, geom="point", shape=18, size=3, color="red") +
+  labs(title="Boxplot por Lote y Medias resaltadas en rojo",
+        x ="Lotes", y = "Valores")
 ```
 
-### Boxplot variables numericas
+### Contraste entre el lote 2 y lote 3 mediante t-test
 
-```{r, eval= (EDA | AI)}
-boxplot(eda_list[[dataset]] %>% select_if(is.numeric))
-    
+```{r}
+temp = eda_list[[dataset]] %>% select(-Repeticion)
+ttresult = t.test(
+  x           = temp$Lote2,
+  y           = temp$Lote3,
+  alternative = "two.sided",
+  mu          = 0,
+  var.equal   = TRUE,
+  conf.level  = 0.95
+)
+
+ttresult
 ```
 
-<!-- Hay outliers univariados? -->
-
-### Multigráficos
-
-```{r, eval= (EDA | AI), fig.width=20, fig.height=18}
-eda_list[[dataset]][,-1] %>%
-  GGally::ggpairs(., mapping = aes(color = as.factor(especie)), upper=list(wrap=list(size=20))) + ###### RENOMBRAR VARIABLE DE GRUPO
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  theme_bw()
+```{r, class.output="bg-warning"}
+if(ttresult$p.value<0.05){'H0 debe rechazarse, los grupos son distintos a nivel de significancia 0.05'} else{'No hay evidencia para rechazar H0'}
 ```
-
-<!-- Se grafica las relaciones del dataset, por grupos. En el cuadro del Grupo se observan las proporciones de observaciones.  Los boxplot muestras las distintas distribuciones por grupo y presencia de outliers univariados.Los dispersogramas muestras asociacioens en datos. En los histogramas y gráficos de densidad se ven las diferencias o no entre los grupos. Finalmente las correlaciones hablan de asociacicion: Las correlaciones de las variables numéricas no son fuertes o son fuertes?. -->
-
-<!-- Salidas: -->
-<!-- -is the data set 'tidy'      -->
-<!-- -Check whether or not there are any missing values       -->
-<!-- -Spend some time thinking about the variables in the data set. Which ones are relevant to the question in hand? If appropriate, decide which variable is the dependent variable (the ‘y’ variable) and which variable(s) is (are) the independent variable(s)? What kind of variables are we dealing with—ratio or interval scale numeric variables, ordinal or nominal categorical variables?.     -->
-<!-- -Visualizar -->
-
-<!-- coefciente de variacion: porcentaje, cuando más bajo sea el valor porcentual del CV menor dispersión se encuentran en los datos. -->
-<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha. IMPORTANTE pues la asimetría sugiere falta de normalidad ) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
-<!-- La desviación media absoluta (DMA o MAD por sus siglas en inglés) de un conjunto de datos es la distancia promedio entre cada valor y el promedio. La desviación media absoluta es una manera de describir la variación en un conjunto de datos. -->
 
 \pagebreak
+
 ## Respuestas 
-\pagebreak
 
+Presupusto del Estudio: las puntuaciones bajas se consideran baja resistencia a la torsion.
+
+1) Hipótesis acerca de la resistencia de materiales:
+-Hipótesis nula: todos los proveedores ofrecen materiales cuya resistencia media son iguales entre sí.
+-Hipótesis alternativa: al menos dos medias son distintas.
+
+2) Análisis: El data set no contiene errores de registro ni datos faltantes, y en tal sentido es propiado para ser evaluado. Se evidencian valores extremos en los datos de resistencia en los Lotes 2, 3, y 5, que dado los pocos datos disponibles no se excluirán del estudio. Considerando los valores medios de la resistencia de los materiales de cada lote surge que el proveedor con datos de menor resistencia promedio en los materiales es el Lote 3 con un valor promedio de 26.772, mientras que aquellos de mayor resistencia promedio son el lote 2 con valores de 30.430 y el lote 4 con 30.422. Se advierte también que la diferencia en los promedios de resistencia entre el lote 2 y lote 4 es poco significativa (0.008 ptos.), pero a favor del lote 2 tiene una menor variabilidad en sus datos. 
+
+Se efectuó un T-test para contraste entre las medias de los lotes 2 y 3 para determinar si sus diferencias eran significativas, y se enoncotró evidencia favorable en tal sentido (con un p-value = 0.0003097) con lo que rechazamos la hipótesis de medias iguales entre ambos grupos.
+
+3) Conclusión:
+- El lote con peor promedio de resistencia en sus materiales es el lote 3, por lo que NO RECOMENDAMOS su inclusión consideración para futuras compras.   
+- El lote con mejores resultados generales según lo expuesto en el análisis y recomendado para compras futuras es el lote 2.     
+
+\pagebreak
 
 # Pregunta2
 ## EDA
 
 ```{r, eval= (EDA | AI)}
 eda_list <- list()
-eda_list$IMCinfantil <- readxl::read_excel("IMCinfantil.xlsx")
+eda_list$clasifautos <- readxl::read_excel("clasifautos.xlsx")
 dataset = 1
 results = multieda(eda_list, dataset)
 ```
@@ -275,9 +278,6 @@ eda_list[[dataset]] %>%
 ```{r, eval= (EDA | AI), fig.align='center'}
 knit_print(results)
 ```
-
-<!-- Las medianas se encuentran cerca de las medias? Si es así podemos pensar que no hay outliers evaluando cada variable por separado, a no ser que haya enmascaramiento. Ver outliers multivariados. -->
-
 ### Grafico Correlaciones
 
 ```{r}
@@ -286,36 +286,250 @@ corrplot.mixed(results$m_correlacion, order = 'AOE')
 
 ### Boxplot variables numericas
 
-```{r, eval= (EDA | AI)}
+```{r, eval= (EDA | AI), fig.width=12, fig.height=14}
 boxplot(eda_list[[dataset]] %>% select_if(is.numeric))
     
 ```
 
-<!-- Hay outliers univariados? -->
+## Observaciones en torno a la exploración de datos
+-Observamos la presencia de valore etremos en muchas variables.   
+-Observamos que las variables estarían bien formadas aunque hay muchos valores faltantes en algunas variables ( ej. Reventa tiene 36 NAs)
+-Observamos también posibles diferencias en las escalas de medición (ej.motor vs ventas).    
+-Observamos que hay variables con una fuerte correlación, por lo que podría reducirse la dimensionalidad del problema para mejor la comprensión de los datos. 
 
-### Multigráficos
+## Analisis de Autos en base a clustering
 
-```{r, eval= (EDA | AI), fig.width=20, fig.height=18}
-eda_list[[dataset]][,-1] %>%
-  GGally::ggpairs(., mapping = aes(color = as.factor(SEXO)), upper=list(wrap=list(size=20))) + ###### RENOMBRAR VARIABLE DE GRUPO
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  theme_bw()
+En este análisi buscaremos patrones o grupos dentro de un conjunto de observaciones con el fin de encontrar similaridades en los autos y marcas a fin de proponer estrategias para su tratamiento diferencial.       
+
+
+```{r, eval=(Clustering | AI)}
+datos <- eda_list[[dataset]] 
 ```
 
-<!-- Se grafica las relaciones del dataset, por grupos. En el cuadro del Grupo se observan las proporciones de observaciones.  Los boxplot muestras las distintas distribuciones por grupo y presencia de outliers univariados.Los dispersogramas muestras asociacioens en datos. En los histogramas y gráficos de densidad se ven las diferencias o no entre los grupos. Finalmente las correlaciones hablan de asociacicion: Las correlaciones de las variables numéricas no son fuertes o son fuertes?. -->
+### Se centran los datos de la matriz
 
-<!-- Salidas: -->
-<!-- -is the data set 'tidy'      -->
-<!-- -Check whether or not there are any missing values       -->
-<!-- -Spend some time thinking about the variables in the data set. Which ones are relevant to the question in hand? If appropriate, decide which variable is the dependent variable (the ‘y’ variable) and which variable(s) is (are) the independent variable(s)? What kind of variables are we dealing with—ratio or interval scale numeric variables, ordinal or nominal categorical variables?.     -->
-<!-- -Visualizar -->
+Considerando que las variables estén registradas en diferentes escalas y/o unidades de medición, vamos a centrar las mismas (media 0 y desviación estandar 1) de tal manera de evitar la influencia de las unidades de medición en la clusterización.     
 
-<!-- coefciente de variacion: porcentaje, cuando más bajo sea el valor porcentual del CV menor dispersión se encuentran en los datos. -->
-<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
-<!-- La desviación media absoluta (DMA o MAD por sus siglas en inglés) de un conjunto de datos es la distancia promedio entre cada valor y el promedio. La desviación media absoluta es una manera de describir la variación en un conjunto de datos. -->
+Se omiten datos faltantes.    
 
-\pagebreak
-## Respuestas 
+```{r, eval=(Clustering | AI)}
+# omite faltantes
+datos = na.omit(datos)
+
+datos <- scale(datos %>% select_if(is.numeric), # Se escalan las variables, (x-median)/sd.
+               center = TRUE, scale = TRUE)
+```
+
+### Se calculas distancias euclideas
+
+```{r, eval=(Clustering | AI)}
+# Distancia euclídea
+mat_dist <- dist(x = datos, method = "euclidean")
+round(as.matrix(mat_dist)[1:5, 1:5], 2)
+```
+
+```{r, eval=(Clustering | AI)}
+# mat_dist <- get_dist(x = datos, method = "pearson")
+# round(as.matrix(mat_dist)[1:5, 1:5], 2)
+```
+
+## Heatmap con Cluster Laterales
+
+```{r}
+heatmap(x = datos, scale = "none",
+        distfun = function(x){dist(x, method = "euclidean")},
+        hclustfun = function(x){hclust(x, method = "average")},
+        cexRow = 0.7)
+```
+
+
+A través de este heatmap comenzamos a aprecier grupos que surgen considerando el color. Así, el color rojo representa alta similaridad y el color azul baja similaridad.    
+
+Por lo visto an los presentaciones anteriores procederemos a aplicar distintas técnicas de agrupamiento.    
+
+## Cluster No Jerarquico: K-means (x centroides)
+
+### Seleccion de los aglomerados de autos (base: método elbow)
+
+Una forma de estimar el número agplomerados o cluster óptimo a falta de informacion adicional, es aplicar el algoritmo de K-means e identificar aquel valor a partir del cual la reducción en la suma total de varianza intra-cluster deja de ser sustancial. A esta estrategia se la conoce como método del codo o elbow method.  
+
+```{r, eval=(Clustering | AI)}
+fviz_nbclust(x = datos, FUNcluster = kmeans, method = "wss", k.max = 15, 
+             diss = get_dist(datos, method = "euclidean"), nstart = 50)
+```
+
+Advertimos que 4 grupos es un númoero optimo.   
+
+### Resultado
+
+```{r, eval=(Clustering | AI)}
+# Según punto elbow chunk anterior elegimos los kluster a representar con param 'centers'
+klusters = 4
+set.seed(123)
+km_clusters <- kmeans(x = datos, centers = klusters, nstart = 50) 
+km_clusters
+```
+
+Esta primera aproximación nos arroja la siguiente representación.   
+
+```{r, eval=(Clustering | AI)}
+# Las funciones del paquete factoextra emplean el nombre de las filas del
+# dataframe que contiene los datos como identificador de las observaciones.
+# Esto permite añadir labels a los gráficos.
+fviz_cluster(object = km_clusters, data = datos, show.clust.cent = TRUE, outlier.color = 'black',
+             ellipse.type = "euclid", star.plot = TRUE, repel = TRUE) +
+  labs(title = str_c("K-means con k = ",length(km_clusters$size)))
+```
+
+Vemos que hay un agrupamiento aceptable de las observaciones. Sin perjuicio de ello se encuentra solapamiento entre los cluster 3 y 4.   
+
+### Grafico Cluster con PCA 
+
+Considerando la dimensión del data set, a continuación reduciremos su magnitud mediante el análisis de componentes principales.
+
+```{r}
+# PCA
+#pca <- prcomp(iris[,-5], scale=TRUE)
+pca <- prcomp(datos)
+
+df.pca <- pca$x
+# Cluster over the three first PCA dimensions
+kc <- kmeans(df.pca[,1:3], klusters)
+fviz_pca_biplot(pca, label="var", habillage=as.factor(kc$cluster)) +
+  labs(color=NULL) + ggtitle("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.key = element_rect(fill = "white"))
+```
+
+Vemos que mpg tiene un peso predominante en a primera componente, y ventas en la componente 2. Asimismo vemos el contraste entre las variable de consumo y el resto, como tambièn la sepración entre los grupos.   
+
+Para proseguir realizaremos nuevos agrupamientos intentando establecer orden de jerarquía. 
+
+## Cluster No Jerarquico: K-medoids clustering (con centro en observación más representativa)
+
+### Selección de k con distancia de Manhattan como medida de similitud
+
+```{r, eval=(Clustering | AI)}
+# Manhatan robusta ante outliers
+fviz_nbclust(x = datos, FUNcluster = pam, method = "wss", k.max = 15,
+             diss = dist(datos, method = "manhattan")) 
+```
+
+```{r, eval=(Clustering | AI)}
+set.seed(123)
+pam_clusters <- pam(x = datos, k = 4, metric = "manhattan")
+pam_clusters
+```
+
+```{r, eval=(Clustering | AI)}
+fviz_cluster(object = pam_clusters, data = datos, ellipse.type = "t",
+             repel = TRUE, show.clust.cent = T) +
+  labs(title = str_c("Resultados clustering 'Partitioning Around Medoids' con k = ", length(pam_clusters$id.med)))
+```
+
+## Cluster Jerárquicos
+
+## Modelo óptimo considerando distintas matrices de distancias y linkage intercluster
+
+```{r, eval=(Clustering | AI)}
+# Matriz de distancias euclídeas
+distancias = c("euclidean", "maximum", "manhattan", "canberra", "binary", "minkowski")
+result = as_tibble()
+
+for (i in seq_along(distancias)) {
+  
+  mat_dist <- dist(x = datos, method =  distancias[i])
+  
+  hc_euclidea_complete <- hclust(d = mat_dist, method = "complete")
+  hc_euclidea_average  <- hclust(d = mat_dist, method = "average")
+  hc_euclidea_single  <- hclust(d = mat_dist, method = "single")
+  hc_euclidea_centroid  <- hclust(d = mat_dist, method = "centroid")
+  hc_euclidea_wardD <- hclust(d = mat_dist, method = "ward.D")
+
+  df = tribble(
+    ~"distancias",~"metodos_linkage", ~"coeficiente_cophenetic", 
+    distancias[i],"complete" , cor(x = mat_dist, cophenetic(hc_euclidea_complete)),
+    distancias[i],"average" , cor(x = mat_dist, cophenetic(hc_euclidea_average)),
+    distancias[i],"single", cor(x = mat_dist, cophenetic(hc_euclidea_single)),
+    distancias[i],"centroid", cor(x = mat_dist, cophenetic(hc_euclidea_centroid)),
+    distancias[i],"ward", cor(x = mat_dist, cophenetic(hc_euclidea_wardD))
+  )
+    
+  result <- result %>% 
+    bind_rows(df)
+  
+}
+
+result <- result %>% 
+  arrange(desc(coeficiente_cophenetic))
+
+result %>% 
+  kable(caption = "Tabla de los distintos modelos -considerando distintas matrices de distancias y linkage intercluster- y sus respectivos coeficientes cofeneticos (orden descendente)",
+        align = 'c', longtable = T)
+```
+
+```{r, eval=(Clustering | AI)}
+# Selecciono los tre modelos con mejor coeficiente cofenético
+clu1 = hclust(d = dist(x = datos, method =  result$distancias[[1]]), method = result$metodos_linkage[[1]])
+clu2 = hclust(d = dist(x = datos, method =  result$distancias[[2]]), method = result$metodos_linkage[[2]])
+clu3 = hclust(d = dist(x = datos, method =  result$distancias[[3]]), method = result$metodos_linkage[[3]])
+```
+
+```{r, eval=(Clustering | AI)}
+# graf param
+cex = 2
+k = 4 # Cuantos clusters
+n = nrow(datos)
+```
+
+```{r, eval=(Clustering | AI), fig.width=20, fig.height=18}
+
+plot(x = clu1, xlab = "", ylab = "", sub = "", hang = -1,
+     cex.lab=cex, cex.axis=cex, cex.main=cex, cex.sub=cex,
+     main = str_c("Modelo Óptimo con distancia: '", result$distancias[[1]], "' y método: '", result$metodos_linkage[[1]], "'"))
+MidPoint = (clu1$height[n-k] + clu1$height[n-k+1]) / 2
+abline(h = MidPoint, lty=2)
+```
+
+```{r, eval=(Clustering | AI), fig.width=20, fig.height=18}
+plot(x = clu2,  xlab = "", ylab = "", sub = "",hang = -1,
+      cex.lab=cex, cex.axis=cex, cex.main=cex, cex.sub=cex,
+     main = str_c("Segundo Modelo con distancia: '", result$distancias[[2]], "' y método: '", result$metodos_linkage[[2]], "'"))
+MidPoint = (clu2$height[n-k] + clu2$height[n-k+1]) / 2
+abline(h = MidPoint, lty=2)
+```
+
+```{r, eval=(Clustering | AI), fig.width=20, fig.height=18}
+plot(x = clu3,  xlab = "", ylab = "", sub = "",hang = -1, label.offset = 1,
+      cex.lab=cex, cex.axis=cex, cex.main=cex, cex.sub=cex,
+     main = str_c("Tercer Modelo con distancia: '", result$distancias[[3]], "' y método: '", result$metodos_linkage[[3]], "'"))
+MidPoint = (clu3$height[n-k] + clu3$height[n-k+1]) / 2
+abline(h = MidPoint, lty=2)
+```
+
+## Estudio de la tendencia de clustering
+
+```{r, eval=(Clustering | AI)}
+# Estadístico H para el set de datos
+# Hopkins statistic: If the value of Hopkins statistic is close to 1 (far above 0.5), then we can conclude that the dataset is significantly clusterable
+res <- get_clust_tendency(datos, n = nrow(df)-1)
+res$hopkins_stat
+```
+
+```{r, eval=(Clustering | AI), class.output="bg-warning"}
+if(res$hopkins_stat>0.75){
+  'Los datos presentan agrupamientos importante, con el estadístico Hopkins <= 0.75'
+} else if((res$hopkins_stat>0.05 & res$hopkins_stat<0.75)) {
+  'Los datos presentan cierto agrupamiento, con estadístico: 0.5 < H > 0.75'
+}else{
+  'Los datos no presentan cierto agrupamiento, con el estadístico Hopkins <= 0.5'
+  }
+```
+
 \pagebreak
 
 # Pregunta3
@@ -323,7 +537,7 @@ eda_list[[dataset]][,-1] %>%
 
 ```{r, eval= (EDA | AI)}
 eda_list <- list()
-eda_list$futbol <- readxl::read_excel("futbol.xlsx")
+eda_list$insectos <- readxl::read_excel("insectos.xlsx") %>% select(-grupo)
 dataset = 1
 results = multieda(eda_list, dataset)
 ```
@@ -356,7 +570,6 @@ eda_list[[dataset]] %>%
 knit_print(results)
 ```
 
-<!-- Las medianas se encuentran cerca de las medias? Si es así podemos pensar que no hay outliers evaluando cada variable por separado, a no ser que haya enmascaramiento. Ver outliers multivariados. -->
 
 ### Grafico Correlaciones
 
@@ -371,35 +584,444 @@ boxplot(eda_list[[dataset]] %>% select_if(is.numeric))
     
 ```
 
-<!-- Hay outliers univariados? -->
-
 ### Multigráficos
 
 ```{r, eval= (EDA | AI), fig.width=20, fig.height=18}
-eda_list[[dataset]][,-1] %>%
-  GGally::ggpairs(., mapping = aes(color = as.factor(Campeón)), upper=list(wrap=list(size=20))) + ###### RENOMBRAR VARIABLE DE GRUPO
+datos =  readxl::read_excel("insectos.xlsx")
+datos %>%
+  GGally::ggpairs(., mapping = aes(color = as.factor(grupo)), upper=list(wrap=list(size=20))) + ###### RENOMBRAR VARIABLE DE GRUPO
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   theme_bw()
 ```
+Considerando la consigna aplicarmos Análisis discriminante lineal.
 
-<!-- Se grafica las relaciones del dataset, por grupos. En el cuadro del Grupo se observan las proporciones de observaciones.  Los boxplot muestras las distintas distribuciones por grupo y presencia de outliers univariados.Los dispersogramas muestras asociacioens en datos. En los histogramas y gráficos de densidad se ven las diferencias o no entre los grupos. Finalmente las correlaciones hablan de asociacicion: Las correlaciones de las variables numéricas no son fuertes o son fuertes?. -->
+## Analisis Discriminante Lineal (LDA)
 
-<!-- Salidas: -->
-<!-- -is the data set 'tidy'      -->
-<!-- -Check whether or not there are any missing values       -->
-<!-- -Spend some time thinking about the variables in the data set. Which ones are relevant to the question in hand? If appropriate, decide which variable is the dependent variable (the ‘y’ variable) and which variable(s) is (are) the independent variable(s)? What kind of variables are we dealing with—ratio or interval scale numeric variables, ordinal or nominal categorical variables?.     -->
-<!-- -Visualizar -->
+```{r, eval=(LDA | AI)}
+datos[[{{variable_factor_lda}}]] = as.factor(datos[[{{variable_factor_lda}}]]) 
+# resumente datos
+str(datos)
+```
 
-<!-- coefciente de variacion: porcentaje, cuando más bajo sea el valor porcentual del CV menor dispersión se encuentran en los datos. -->
-<!-- sesgo (simetria=campana, asimetría izquierda = cola izquierda, asimetría derecha=cola derecha) y curtosis (compara en relaciòn a distribucion normal, muy junto al centro o achatado) se relacionan con cuadros de densidad.  -->
-<!-- La desviación media absoluta (DMA o MAD por sus siglas en inglés) de un conjunto de datos es la distancia promedio entre cada valor y el promedio. La desviación media absoluta es una manera de describir la variación en un conjunto de datos. -->
+### Box por variable
+
+
+```{r, eval=(LDA | AI)}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
+  rename(grupo = variable_factor_lda) %>% 
+  ggplot(aes(x=variables, y=cantidad, fill=as.factor(grupo))) + 
+  geom_boxplot() +
+  stat_summary(fun.y=mean, geom="point", shape=18, size=3, color="red") +
+  facet_wrap(~variables, scales = 'free')
+```
+Del gráfico surge que la variable de mayor poder discriminante sería la longitud de la pata en estos insectos. 
+
+
+```{r,  eval=(LDA | AI)}
+set.seed(1999)
+training.samples <- datos[[{{variable_factor_lda}}]] %>%
+  createDataPartition(p = 0.8, list = FALSE)
+train <- datos[training.samples, ]
+train[[{{variable_factor_lda}}]] = as.factor(train[[{{variable_factor_lda}}]]) 
+test <- datos[-training.samples, ]
+test[[{{variable_factor_lda}}]] = as.factor(test[[{{variable_factor_lda}}]]) 
+```
+
+```{r, eval=(LDA | AI)}
+temp <- train %>% select(!{{variable_factor_lda}})
+l <- length(unique(train[[{{variable_factor_lda}}]]))
+
+```
+
+### Explorando discriminación por pares de variable
+
+```{r, eval=(LDA | AI)}
+pairs(x =temp, col =train[[{{variable_factor_lda}}]], oma=c(3,3,3,15))
+par(xpd = TRUE)
+legend("bottomright", fill = unique(train[[{{variable_factor_lda}}]]), legend = c(levels(train[[{{variable_factor_lda}}]])))
+```
+
+### Histograma VariablexGrupo
+
+```{r, eval=(LDA | AI)}
+par(mfcol = c(l, dim(temp)[2]))
+for (k in 1:dim(temp)[2]) {
+  j0 <- names(temp)[k]
+  x0 <- seq(min(temp[, k]), max(temp[, k]), le = 50)
+  for (i in 1:l) {
+    i0 <- levels(train[[{{variable_factor_lda}}]])[i]
+    x <- temp[train[[{{variable_factor_lda}}]] == i0, j0]
+    x = x[[1]] #univariante
+    hist(x, proba = T, col = grey(0.8), main = paste(variable_factor_lda, i0),
+    xlab = j0)
+    lines(x0, dnorm(x0, mean(x), sd(x)), col = "red", lwd = 2)
+  }
+}
+```
+
+### Contraste de Normalidad Univariante Shapiro-Wilk
+
+```{r, eval=(LDA | AI)}
+train_tidy <- melt(train, value.name = "valor")
+train_tidy_test <- train_tidy %>% 
+  group_by(train_tidy[[{{variable_factor_lda}}]], variable) %>% 
+  summarise(p_value_Shapiro.test = round(shapiro.test(valor)$p.value, digits = 5))
+kableExtra::kable(train_tidy_test)
+```
+
+```{r, eval=(LDA | AI), class.output="bg-warning"}
+if(any(train_tidy_test$p_value_Shapiro.test < 0.05)){'H0 debe rechazarse: hay evidencia de falta de normalidad en los siguientes casos'} else {'No hay evidencia de falta de normalidad univariante en ninguna variable predictora por grupo'}
+train_tidy_test[train_tidy_test$p_value_Shapiro.test < 0.05, ]
+
+```
+
+### Contraste de Normalidad MultiVariante
+
+### Outliers
+
+```{r, eval=(LDA | AI)}
+outliers <- MVN::mvn(data =temp, mvnTest = "hz", multivariateOutlierMethod = "quan")
+```
+
+
+```{r, eval=(LDA | AI)}
+if(!is.null(outliers$multivariateOutliers)){outliers$multivariateOutliers}
+```
+
+Vemos la presencia de ouliers 
+
+### Test de Royston
+
+```{r, eval=(LDA | AI)}
+royston_test <- MVN::mvn(data = temp, mvnTest = "royston", multivariatePlot = "qq")
+royston_test$multivariateNormality
+```
+
+```{r, eval=(LDA | AI), class.output="bg-warning"}
+# N tiene que ser > 3 y < a 5000
+if(any(royston_test$multivariateNormality$MVN == "NO")){'H0 debe rechazarse: falta de normalidad multivariante a nivel de significancia 0.05'} else {'No hay evidencia de falta de normalidad multivariante a nivel de significancia 0.05'}
+```
+
+### Test de Henze-Zirkler
+
+```{r, eval=(LDA | AI)}
+hz_test <- MVN::mvn(data = temp, mvnTest = "hz")
+hz_test$multivariateNormality
+```
+
+```{r, eval=(LDA | AI), class.output="bg-warning"}
+if(any(hz_test$multivariateNormality$MVN == "NO")){'H0 debe rechazarse: falta de normalidad multivariante a nivel de significancia 0.05'} else {'No hay evidencia de falta de normalidad multivariante a nivel de significancia 0.05 '}
+```
+
+### Contraste Homosedasticidad 
+
+### Test de Levene
+
+Mas robusto que el test M de Box 
+
+```{r, eval=(LDA | AI)}
+levenetest = heplots::leveneTests(temp, train[[{{variable_factor_lda}}]], center = median)
+levenetest
+```
+
+```{r, eval=(LDA | AI)}
+if(any(levenetest$`Pr(>F)`<0.05)){'H0 debe rechazarse: no se cumple supuesto de homosedasticidad.Intentar QDA'} else {'No hay evidencia para rechazar H0, luego los datos son homosedásticos'}
+```
+
+### Estimación de parámetros de la función de densidad y cálculo de la función discriminante según aproximación de Fisher via lda()
+
+```{r, eval = LDA}
+modelo_lda <- lda(temp, train[[{{variable_factor_lda}}]])
+```
+
+```{r, eval= LDA}
+modelo_lda
+```
+
+`r if (LDA & !is.na(valores_lda_nvaobs)) '## Clasificacion de la nueva observacion'`
+
+```{r, eval= LDA & !is.na(valores_lda_nvaobs)}
+columnas = colnames(temp)
+nueva_observacion <- rbind(columnas, valores_lda_nvaobs)
+nueva_observacion <- nueva_observacion %>% 
+  janitor::row_to_names(row_number = 1)
+nueva_observacion <- nueva_observacion %>% as_tibble() %>% mutate_if(is.character, as.numeric)
+predict(object = modelo_lda, newdata = nueva_observacion)
+```
+
+### Evaluación del error en Test Set: Accuracy Table
+
+```{r, eval=(LDA | AI)}
+temp_test <- test %>% select(!{{variable_factor_lda}})
+predicciones <- predict(object = modelo_lda, newdata = temp_test, method = "predictive")
+table(test[[{{variable_factor_lda}}]], predicciones$class, dnn = c("Clase real", "Clase predicha"))
+```
+
+### Precisión del modelo en test set
+
+```{r, eval=(LDA | AI)}
+mean(predicciones$class==test[[{{variable_factor_lda}}]])*100
+```
+
+### Error en test set
+
+```{r, eval=(LDA | AI)}
+test_error <- mean(test[[{{variable_factor_lda}}]] != predicciones$class) * 100
+paste("test_error =", test_error, "%")
+```
+
+### Validación Cruzada (leave one out)
+
+```{r, eval=(LDA | AI)}
+tipo.prediccion.cv <- lda(temp, train[[{{variable_factor_lda}}]], prior = c(0.5,0.5), CV =TRUE)$class
+1 - sum(tipo.prediccion.cv == train[[{{variable_factor_lda}}]])/modelo_lda$N
+```
+
+### Visualización de las clasificaciones
+
+```{r, eval=(LDA | AI)}
+partimat(temp_test, test[[{{variable_factor_lda}}]], method = "lda", prec = 200)
+```
+A continuación emplearemos un segundo modelo de clasificación
+
+## Máquinas de Soporte Vectorial
+
+```{r, eval=(SVM | AI)}
+# Bibliograf
+
+# https://www.cienciadedatos.net/documentos/34_maquinas_de_vector_soporte_support_vector_machines
+
+#Cambiar
+#datos <- ISLR::OJ
+datos = readxl::read_excel("insectos.xlsx") 
+
+datos[[{{variable_factor_svm}}]] = as.factor(datos[[{{variable_factor_svm}}]])
+
+# Convierto variables predictoras tipo factor a numeric
+dat_f = datos %>% select(variable_factor_svm)
+
+
+dat_all =  datos %>%
+  select(-variable_factor_svm) %>%
+  mutate_if(is.factor, as.numeric) 
+
+# Matriz escalada--------------------------------------------------
+# dat_all <- dat_all %>% 
+#   select_if(is.numeric) %>% 
+#   scale(center = T, scale = T)
+
+
+datos = dat_f %>% bind_cols(dat_all)
+
+# x=c(rnorm (50,5,2),rnorm(50,8,1.5),rnorm(50,1,1.2))
+# y=c(abs(rnorm(50,5,2)),rnorm(50,8,1.5),rnorm(50,1,1.2))
+# Grupo=as.factor(c(rep("A",50),rep("B",50),rep("C",50)))
+# datos =data.frame(x,y,Grupo)
+
+# # Programar la elección de otros kernel???!!!!
+# kernel = "radial" 
+
+# resumente datos
+str(datos)
+```
+
+### Grafico datos
+
+```{r, eval=(SVM | AI)}
+datos %>% 
+  ggplot( aes(x = variable_factor_svm, y = ..count.., fill = datos[[{{variable_factor_svm}}]])) +
+  geom_bar() 
+```
+
+```{r, eval=(SVM | AI)}
+# Índices observaciones de entrenamiento
+set.seed(123)
+train <- createDataPartition(y = datos[[{{variable_factor_svm}}]], p = 0.8, list = FALSE, times = 1)
+# Datos entrenamiento
+datos_train <- datos[train, ]
+datos_test <- datos[-train, ]
+dim(datos_train)
+dim(datos_test)
+
+```
+
+### Busqueda de mejor hiperparametro C (coste) y Entrenamiento del Modelo con kernel lineal
+
+```{r, eval=(SVM | AI)}
+temp = datos_train %>% select(-variable_factor_svm)
+set.seed(325)
+tuning <- tune(svm, train.x = temp,  train.y = datos_train[[{{variable_factor_svm}}]],
+               kernel = "linear",
+               ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 15, 20)),
+               scale = TRUE) # parametro para escalar los predictores
+```
+
+```{r, eval=(SVM | AI)}
+summary(tuning)
+```
+
+#### Mejor modelo según hiperparametro
+
+```{r, eval=(SVM | AI)}
+modelo_svc <- tuning$best.model
+summary(modelo_svc)
+```
+
+```{r, eval=(SVM | AI)}
+# Muestra de 50 de los 345
+head(modelo_svc$index)
+```
+
+### Predicciones del Modelo
+
+```{r, eval=(SVM | AI)}
+temp = datos_test %>% select(-variable_factor_svm)
+predicciones = predict(modelo_svc, temp)
+table(prediccion = predicciones, real = datos_test[[{{variable_factor_svm}}]])
+```
+
+```{r, eval=(SVM | AI)}
+paste("Observaciones de test mal clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] != predicciones) %>% 
+        round(digits = 4), "%")
+```
+
+```{r, eval=(SVM | AI)}
+paste("Observaciones de test bien clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] == predicciones) %>% 
+        round(digits = 4), "%")
+```
+
+### Busqueda de mejor hiperparametro C (coste) y Entrenamiento del Modelo con kernel polynomial
+
+```{r, eval=(SVM | AI)}
+temp = datos_train %>% select(-variable_factor_svm)
+set.seed(325)
+tuning <- tune(svm, train.x = temp,  train.y = datos_train[[{{variable_factor_svm}}]],
+               kernel = "polynomial",
+               ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 15, 20)),
+               scale = TRUE)
+```
+
+```{r, eval=(SVM | AI)}
+summary(tuning)
+```
+
+#### Mejor modelo según hiperparametro
+
+```{r, eval=(SVM | AI)}
+modelo_svc <- tuning$best.model
+summary(modelo_svc)
+```
+
+### Predicciones del Modelo
+
+```{r, eval=(SVM | AI)}
+temp = datos_test %>% select(-variable_factor_svm)
+predicciones = predict(modelo_svc, temp)
+table(prediccion = predicciones, real = datos_test[[{{variable_factor_svm}}]])
+```
+
+```{r, eval=(SVM | AI)}
+paste("Observaciones de test mal clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] != predicciones) %>% 
+        round(digits = 4), "%")
+```
+
+```{r, eval=(SVM | AI)}
+paste("Observaciones de test bien clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] == predicciones) %>% 
+        round(digits = 4), "%")
+```
+
+### Busqueda de mejor hiperparametro C (coste) y Entrenamiento del Modelo con kernel sigmoid
+
+```{r, eval=(SVM | AI)}
+temp = datos_train %>% select(-variable_factor_svm)
+set.seed(325)
+tuning <- tune(svm, train.x = temp,  train.y = datos_train[[{{variable_factor_svm}}]],
+               kernel = "sigmoid",
+               ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 15, 20)),
+               scale = TRUE)
+```
+
+#### Mejor modelo según hiperparametro
+
+```{r, eval=(SVM | AI)}
+modelo_svc <- tuning$best.model
+summary(modelo_svc)
+```
+
+### Predicciones del Modelo
+
+```{r, eval=(SVM | AI)}
+temp = datos_test %>% select(-variable_factor_svm)
+predicciones = predict(modelo_svc, temp)
+table(prediccion = predicciones, real = datos_test[[{{variable_factor_svm}}]])
+```
+
+```{r, eval=(SVM | AI)}
+paste("Observaciones de test mal clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] != predicciones) %>% 
+        round(digits = 4), "%")
+```
+
+```{r, eval=(SVM | AI)}
+paste("Observaciones de test bien clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] == predicciones) %>% 
+        round(digits = 4), "%")
+```
+
+### Busqueda de mejor hiperparametro C (coste) y Entrenamiento del Modelo con kernel radial 
+
+```{r, eval=(SVM | AI)}
+temp = datos_train %>% select(-variable_factor_svm)
+set.seed(325)
+tuning <- tune(svm, train.x = temp,  train.y = datos_train[[{{variable_factor_svm}}]],
+               kernel = "radial",
+               ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 15, 20)),
+               scale = TRUE)
+```
+
+#### Mejor modelo según hiperparametro
+
+```{r, eval=(SVM | AI)}
+modelo_svc <- tuning$best.model
+summary(modelo_svc)
+```
+
+### Predicciones del Modelo
+
+```{r, eval=(SVM | AI)}
+temp = datos_test %>% select(-variable_factor_svm)
+predicciones = predict(modelo_svc, temp)
+table(prediccion = predicciones, real = datos_test[[{{variable_factor_svm}}]])
+```
+
+```{r, eval=(SVM | AI)}
+paste("Observaciones de test mal clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] != predicciones) %>% 
+        round(digits = 4), "%")
+```
+
+```{r, eval=(SVM | AI)}
+paste("Observaciones de test bien clasificadas:", 
+      100 * mean(datos_test[[{{variable_factor_svm}}]] == predicciones) %>% 
+        round(digits = 4), "%")
+```
 
 \pagebreak
-## Respuestas 
+### Respuestas 
 
+Considerando las dos metodologías, aunque la precisión de ambos modelos LDA y SVM (con kernel lineal) es la misma (100% de precisión en test set), consierando la poca cantidad de datos elegirìa el SVM.   
 
+\pagebreak
 
-# Sesion
+# Documento e Información de Sesion
+
+Este documento fue generado a partir de un documento **RMarkdown** parametrizable que se entrega con su correspondiente output en pdf. Para conrroborar la originalidad y autoría del documento .Rmd se pone a disposición (bajo requerimiento) de la fecha de ceación e hitórico de cambios alojado en la cuenta personal del suscripto castillosebastian@github.com.    
+
 ```{r}
 sessionInfo()
 ```

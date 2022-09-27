@@ -54,6 +54,7 @@ params:
     input: text
     value: ''
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F, warning = F, message = F)
 source("Unidad0_repos_and_tools.R")
@@ -95,26 +96,29 @@ variable_factor_svm = params$categoriesSVM
 
 ```
 
-# ANOVA 
+# ANOVA_univariante
 
 <!-- # EJERCICIO X -->
 
 <!-- Análisis de las medias de dos o más grupos. -->
 
 <!-- **H0:** las medias son iguales entre los grupos . Bajo la hipótesis nula de que las observaciones de los distintos grupos proceden todas de la misma población (tienen la misma media y varianza), la varianza ponderada entre grupos será la misma que la varianza promedio dentro de los grupos. -->
+
 <!-- **H1:** al menos dos medias son distintas del resto -->
 
 <!-- **Requisitos:** -->
 
 <!-- - distribuciones normales -->
+
 <!-- - independientes entre si, y -->
+
 <!-- - igual varianza (homosedásticas) -->
 
 <!-- Si los supuestos no se satisface se pueden aplicar trasnformaciones para intentar aproximarnos a la normalidad en la distribución de los datos o bien aplicar técnicas no paramétricas que no tengan aquellos supuestos. -->
 
-## Datos 
+## Datos
 
-```{r, anova1, eval=ANOVA} 
+```{r, anova1, eval=ANOVA}
 dir = "~/R/research_tools/utn_analisis_inteligente_datos/"
 f = glue::glue(dir, db_name)
 df <- read_csv(f)
@@ -132,24 +136,26 @@ head(df)
 
 ## Observaciones por grupo:
 
-```{r, anova4, eval=ANOVA} 
+```{r, anova4, eval=ANOVA}
 observaciones <- df %>% 
   group_by(df[[{{variable_factor}}]]) %>% 
   summarise(n())
 observaciones
 ```
 
-
 ## Se cumplen los supuestos para su implementación?
 
 <!-- **Boxplot para ver distribución de datos** -->
 
 <!-- - Identificar asimetrías(sesgo a uno de los lados) -->
+
 <!-- - Datos atipicos -->
+
 <!-- - Diferencia de varianzas -->
+
 <!-- - Homocedasticidad     -->
 
-```{r, anova5, eval=ANOVA} 
+```{r, anova5, eval=ANOVA}
 ggplot(data = df, aes(x = df[[{{variable_factor}}]], y = df[[{{variable_numerica}}]], fill = as.factor(df[[{{variable_factor}}]])))+
  geom_boxplot()+
  geom_point(position = position_jitter(0.1))
@@ -175,7 +181,7 @@ values = df[[{{variable_numerica}}]]
 values
 ```
 
-```{r, anova8, eval=ANOVA} 
+```{r, anova8, eval=ANOVA}
 # factorizo variable factor
 fact = as.factor(df[[{{variable_factor}}]]) 
 fact
@@ -184,7 +190,7 @@ fact
 
 ### fit del modelo
 
-```{r, anova9, eval=ANOVA} 
+```{r, anova9, eval=ANOVA}
 if(ctranformacion){
   bm = MASS::boxcox(lm(values~fact)) 
   lambda= bm$x
@@ -199,7 +205,7 @@ if(ctranformacion){
 }
 ```
 
-```{r, anova10, eval=ANOVA} 
+```{r, anova10, eval=ANOVA}
 summary(df_anova) 
 ```
 
@@ -248,7 +254,7 @@ ltest
 if(ltest$`Pr(>F)`[1]<0.05){'H0 debe rechazarse: no se cumple supuesto de homosedasticidad'} else {'No hay evidencia para rechazar H0, luego los datos son homosedásticos'}
 ```
 
-Test de Bartlett 
+Test de Bartlett
 
 *sensibilidad al supuesto de normalidad*
 
@@ -307,7 +313,7 @@ agostinotest
 
 <!-- Cuando se rechaza la hipótesis nula es natural seguir la exploración para determinar cuáles medias son diferentes. Esta exploración se denominan *comparaciones a posteriori o post-hoc*. -->
 
-## Tukey’s Honest Significant Differences (HSD)
+## Tukey's Honest Significant Differences (HSD)
 
 ```{r, anova25, eval=ANOVA}
 TukeyHSD(df_anova)
@@ -324,6 +330,7 @@ plot(TukeyHSD(df_anova))
 <!-- A diferencia del ANOVA en el que se comparan medias, el test de Kruskal-Wallis contrasta si las diferentes muestras están equidistribuidas y que por lo tanto pertenecen a una misma distribución (población). Bajo ciertas simplificaciones puede considerarse que el test de Kruskal-Wallis compara las medianas. -->
 
 <!-- H0: todas las muestras provienen de la misma población (distribución).     -->
+
 <!-- HA: Al menos una muestra proviene de una población con una distribución distinta  -->
 
 ```{r, anova27, eval=ANOVA}
@@ -340,10 +347,10 @@ kruskaltest
 pgirmess::kruskalmc(values ~ fact)
 ```
 
-
-# ANOVA_multivariante 
+# ANOVA_multivariante
 
 ## Datos
+
 ```{r, eval=ANOVAm}
 # subject <- as.factor(c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
 #                        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30))
@@ -366,6 +373,7 @@ datos[[{{variable_factor_anovam}}]] = as.integer(datos[[{{variable_factor_anovam
                                              
 head(datos, 4)
 ```
+
 ## Gafico
 
 ```{r, eval=ANOVAm}
@@ -386,11 +394,10 @@ s
 ```{r, eval=ANOVAm, class.output="bg-warning"}
 if(any(s[[1]][["Pr(>F)"]] < 0.05)){'La varianza presenta diferencias significativas entre los grupos'} else {'La varianza no presenta diferencia significativa entre los grupos'}
 ```
+
 ## Tamaño del efecto
 
-.01: Small effect size
-.06: Medium effect size
-.14 or higher: Large effect size
+.01: Small effect size .06: Medium effect size .14 or higher: Large effect size
 
 ```{r, eval=ANOVAm}
 efecto = lsr::etaSquared(anova_2vias)
@@ -407,21 +414,26 @@ efecto_grande = rownames(efecto)[efecto[,1] >= 0.14]
 if(length(efecto_grande) >=1){str_c('Efecto grande en:', efecto_grande)} else {'No hay efecto grande'}
 ```
 
-# Analisis Discriminante Lineal (LDA) 
+# Analisis Discriminante Lineal (LDA)
 
 ```{r}
 # artículo: https://www.cienciadedatos.net/documentos/28_linear_discriminant_analysis_lda_y_quadratic_discriminant_analysis_qda#Ejemplo_datos_insectos
 ```
 
-
 <!-- El Análisis Discriminante Lineal o Linear Discrimiant Analysis (LDA) es un método de clasificación supervisado de variables cualitativas en el que dos o más grupos son conocidos a priori y nuevas observaciones se clasifican en uno de ellos en función de sus características. -->
 
 <!-- Tres enfoques: -->
+
 <!-- - x verosimilitud/Fisher -->
+
 <!--     Implica tener un modelo de los datos donde se pueda establecer una línea de discriminación entre grupos. El problema se puede plantear como  -->
+
 <!--     la busqueda de maximizar la variabilidad entre los grupos en relacion al total de la varianza en los datos. En termino matriciales esto implica     -->
+
 <!--     la busqueda de proyectar las observaciones p-variadas sobre una dirección que maximice la separaciones entre los grupos. Parecido a PCA. -->
+
 <!-- - x distancia Mahalanobis -->
+
 <!-- - x Bayes/probabilidad a_posteriori -->
 
 <!-- # Requisitos    -->
@@ -429,7 +441,6 @@ if(length(efecto_grande) >=1){str_c('Efecto grande en:', efecto_grande)} else {'
 <!-- - Cada predictor que forma parte del modelo se distribuye de forma normal en cada una de las clases de la variable respuesta. En el caso de múltiples predictores, las observaciones siguen una distribución normal multivariante en todas las clases.    -->
 
 <!-- - La varianza del predictor es igual en todas las clases de la variable respuesta. En el caso de múltiples predictores, la matriz de covarianza es igual en todas las clases. Si esto no se cumple se recurre a Análisis Discriminante Cuadrático (QDA).     -->
-
 
 <!-- # LDA_1predictor vs LDA_multiples_predictores -->
 
@@ -442,6 +453,7 @@ if(length(efecto_grande) >=1){str_c('Efecto grande en:', efecto_grande)} else {'
 <!-- Es una alternativa a la regresión logística cuando la variable cualitativa tiene más de dos niveles. Si bien existen extensiones de la regresión logística para múltiples clases, el LDA presenta una serie de ventajas: -->
 
 <!-- - Si las clases están bien separadas, los parámetros estimados en el modelo de regresión logística son inestables. El método de LDA no sufre este problema.     -->
+
 <!-- - Si el número de observaciones es bajo y la distribución de los predictores es aproximadamente normal en cada una de las clases, LDA es más estable que la regresión logística.    -->
 
 ## Datos
@@ -494,7 +506,7 @@ par(xpd = TRUE)
 legend("bottomright", fill = unique(datos[[{{variable_factor_lda}}]]), legend = c(levels(datos[[{{variable_factor_lda}}]])))
 ```
 
-Ver qué par de variables separa bien las `r variable_factor_lda `
+Ver qué par de variables separa bien las `r variable_factor_lda`
 
 ## Homogeneidad de la Varianza: Histograma VariablexGrupo
 
@@ -517,7 +529,7 @@ for (k in 1:dim(temp)[2]) {
 
 ## Medias de las variables por Grupo
 
-Las variables son muy parecidas. 
+Las variables son muy parecidas.
 
 ```{r, eval=LDA}
 datos %>% 
@@ -531,7 +543,8 @@ datos %>%
   coord_flip() +
   facet_grid(. ~ grupo)
 ```
-## Boxplot 
+
+## Boxplot
 
 ### Boxplot todas las variables
 
@@ -541,6 +554,7 @@ datos %>%
 ```
 
 ### Box por grupo
+
 ```{r, eval=LDA}
 datos %>% 
   pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
@@ -551,6 +565,7 @@ datos %>%
 ```
 
 ### Box por variable
+
 ```{r, eval=LDA}
 datos %>% 
   pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
@@ -570,7 +585,7 @@ datos %>%
   summarise(medias = round(mean(cantidad, na.rm=T), digits = 2)) 
 ```
 
-Viendo los gráficos de las distribuciones de datos en las variables por grupo y los respectivos vectores medios no parece útil realizar un análisis discriminante. 
+Viendo los gráficos de las distribuciones de datos en las variables por grupo y los respectivos vectores medios no parece útil realizar un análisis discriminante.
 
 ## Subseleccionamos variables para el análisis
 
@@ -641,7 +656,7 @@ boxmtest
 if(boxmtest$p.value < 0.05){'H0 debe rechazarse: hay evidencia de que la covarianza no es igual en todos los grupos'} else {'Se puede aceptar que la matriz de covarianza es igual en todos los grupos'}
 ```
 
-## Estimación de parámetros de la función de densidad (u^(X),E) y cálculo de la función discriminante según aproximación de Fisher via lda()
+## Estimación de parámetros de la función de densidad (u\^(X),E) y cálculo de la función discriminante según aproximación de Fisher via lda()
 
 ```{r, eval = LDA}
 modelo_lda <- lda(temp, datos[[{{variable_factor_lda}}]])
@@ -685,9 +700,10 @@ paste("trainig_error =", trainig_error, "%")
 partimat(temp, datos[[{{variable_factor_lda}}]], method = "lda", prec = 200)
 ```
 
-# Analisis Discriminante Cuadrático (QDA)>falta de homocedasticidad/outliers LDA 
+# Analisis Discriminante Cuadrático (QDA)\>falta de homocedasticidad/outliers LDA
 
 <!-- El clasificador cuadrático o Quadratic Discriminat Analysis QDA se asemeja en gran medida al LDA, con la única diferencia de que el QDA considera que cada clase k tiene su propia matriz de covarianza (∑k) y, como consecuencia, la función discriminante toma forma cuadrática.    -->
+
 <!-- QDA genera límites de decisión curvos por lo que puede aplicarse a situaciones en las que la separación entre grupos no es lineal.    -->
 
 ```{r, eval = QDA}
@@ -771,7 +787,7 @@ boxmtest
 if(boxmtest$p.value < 0.05){'H0 debe rechazarse: hay evidencia de que la covarianza no es igual en todos los grupos'} else {'Se puede aceptar que la matriz de covarianza es igual en todos los grupos'}
 ```
 
-## Parámetros de la función de densidad  función discriminante según aproximación de Fisher via qda()
+## Parámetros de la función de densidad función discriminante según aproximación de Fisher via qda()
 
 ```{r, eval = QDA}
 modelo_qda <- qda(temp, datosQ[[{{variable_factor_qda}}]])
@@ -816,22 +832,24 @@ paste("trainig_error =", trainig_error, "%")
 partimat(temp, datosQ[[{{variable_factor_qda}}]], method = "qda", prec = 200)
 ```
 
-
-
-# Analisis Discriminante Cuadrático Robusto (RQDA)>falta normalidad    
+# Analisis Discriminante Cuadrático Robusto (RQDA)\>falta normalidad ..PENDIENTE
 
 <!-- -emplea distancia de Mahalanobis robusta -->
+
 <!-- -se obtiene con MCD: Minimum Covariance Determinant -->
+
 <!-- Utilizar librería: https://github.com/valentint/rrcov  o libro alicia p.321 -->
-    
+```{r}
+
+```
+
+
+
 # Máquinas de Soporte Vectorial
 
 <!-- El algoritmo de las SVM a partir del producto escalar de dos vectores multidimensionales, busca una familia de hiperplanos que sepa ren los grupos. La función que define este producto escalar es denominada kernel y la misma puede ser lineal, polinómica, radial o sigmoidal. -->
 
 <!-- Muy importante estandarizar datos -->
-
-
-
 
 ## Datos
 
@@ -936,7 +954,7 @@ summary(modelo_svc)
 head(modelo_svc$index)
 ```
 
-## Predicciones del Modelo 
+## Predicciones del Modelo
 
 ```{r, eval=SVM}
 temp = datos_test %>% select(-variable_factor_svm)
@@ -949,6 +967,7 @@ paste("Observaciones de test mal clasificadas:",
       100 * mean(datos_test[[{{variable_factor_svm}}]] != predicciones) %>% 
         round(digits = 4), "%")
 ```
+
 ```{r, eval=SVM}
 paste("Observaciones de test bien clasificadas:", 
       100 * mean(datos_test[[{{variable_factor_svm}}]] == predicciones) %>% 
@@ -957,21 +976,26 @@ paste("Observaciones de test bien clasificadas:",
 
 Los bien clasificados por especies son: 100% en setosa y virginica, y 90% en versicolor. El error en versicolor y virgínica es lógico porque son los grupos con mayor similitud en sus datos.
 
-# Analisis Discriminante Lineal (LDA) 
+# Analisis Discriminante Lineal (LDA)
 
 ```{r}
 # artículo: https://www.cienciadedatos.net/documentos/28_linear_discriminant_analysis_lda_y_quadratic_discriminant_analysis_qda#Ejemplo_datos_insectos
 ```
 
-
 <!-- El Análisis Discriminante Lineal o Linear Discrimiant Analysis (LDA) es un método de clasificación supervisado de variables cualitativas en el que dos o más grupos son conocidos a priori y nuevas observaciones se clasifican en uno de ellos en función de sus características. -->
 
 <!-- Tres enfoques: -->
+
 <!-- - x verosimilitud/Fisher -->
+
 <!--     Implica tener un modelo de los datos donde se pueda establecer una línea de discriminación entre grupos. El problema se puede plantear como  -->
+
 <!--     la busqueda de maximizar la variabilidad entre los grupos en relacion al total de la varianza en los datos. En termino matriciales esto implica     -->
+
 <!--     la busqueda de proyectar las observaciones p-variadas sobre una dirección que maximice la separaciones entre los grupos. Parecido a PCA. -->
+
 <!-- - x distancia Mahalanobis -->
+
 <!-- - x Bayes/probabilidad a_posteriori -->
 
 <!-- # Requisitos    -->
@@ -979,7 +1003,6 @@ Los bien clasificados por especies son: 100% en setosa y virginica, y 90% en ver
 <!-- - Cada predictor que forma parte del modelo se distribuye de forma normal en cada una de las clases de la variable respuesta. En el caso de múltiples predictores, las observaciones siguen una distribución normal multivariante en todas las clases.    -->
 
 <!-- - La varianza del predictor es igual en todas las clases de la variable respuesta. En el caso de múltiples predictores, la matriz de covarianza es igual en todas las clases. Si esto no se cumple se recurre a Análisis Discriminante Cuadrático (QDA).     -->
-
 
 <!-- # LDA_1predictor vs LDA_multiples_predictores -->
 
@@ -992,6 +1015,7 @@ Los bien clasificados por especies son: 100% en setosa y virginica, y 90% en ver
 <!-- Es una alternativa a la regresión logística cuando la variable cualitativa tiene más de dos niveles. Si bien existen extensiones de la regresión logística para múltiples clases, el LDA presenta una serie de ventajas: -->
 
 <!-- - Si las clases están bien separadas, los parámetros estimados en el modelo de regresión logística son inestables. El método de LDA no sufre este problema.     -->
+
 <!-- - Si el número de observaciones es bajo y la distribución de los predictores es aproximadamente normal en cada una de las clases, LDA es más estable que la regresión logística.    -->
 
 ## Datos
@@ -1019,29 +1043,41 @@ par(xpd = TRUE)
 legend("bottomright", fill = unique(datos[[{{variable_factor_lda}}]]), legend = c(levels(datos[[{{variable_factor_lda}}]])))
 ```
 
-Ver qué par de variables separa bien las `r variable_factor_lda `
+Ver qué par de variables separa bien las `r variable_factor_lda`
 
 ## Homogeneidad de la Varianza: Histograma VariablexGrupo
 
 <!-- ```{r, eval=LDA} -->
+
 <!-- par(mfcol = c(l, dim(temp)[2])) -->
 
 <!-- for (k in 1:dim(temp)[2]) { -->
+
 <!--   j0 <- names(temp)[k] -->
+
 <!--   x0 <- seq(min(temp[, k]), max(temp[, k]), le = 50) -->
+
 <!--   for (i in 1:l) { -->
+
 <!--     i0 <- levels(datos[[{{variable_factor_lda}}]])[i] -->
+
 <!--     x <- temp[datos[[{{variable_factor_lda}}]] == i0, j0] -->
+
 <!--     hist(x, proba = T, col = grey(0.8), main = paste(variable_factor_lda, i0), -->
+
 <!--     xlab = j0) -->
+
 <!--     lines(x0, dnorm(x0, mean(x), sd(x)), col = "red", lwd = 2) -->
+
 <!--   } -->
+
 <!-- } -->
+
 <!-- ``` -->
 
 ## Medias de las variables por Grupo
 
-Las variables son muy parecidas. 
+Las variables son muy parecidas.
 
 ```{r, eval=LDA}
 datos %>% 
@@ -1055,7 +1091,8 @@ datos %>%
   coord_flip() +
   facet_grid(. ~ grupo)
 ```
-## Boxplot 
+
+## Boxplot
 
 ### Boxplot todas las variables
 
@@ -1065,6 +1102,7 @@ datos %>%
 ```
 
 ### Box por grupo
+
 ```{r, eval=LDA}
 datos %>% 
   pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
@@ -1075,6 +1113,7 @@ datos %>%
 ```
 
 ### Box por variable
+
 ```{r, eval=LDA}
 datos %>% 
   pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lda) %>% 
@@ -1083,6 +1122,7 @@ datos %>%
   geom_boxplot() +
   facet_wrap(~variables, scales = 'free')
 ```
+
 ## Histogramas
 
 ```{r, eval=LDA}
@@ -1102,10 +1142,6 @@ for (k in 1:dim(temp)[2]) {
   }
 }
 ```
-
-
-
-
 
 ## Vectores medios de ambos grupos
 
@@ -1174,7 +1210,7 @@ boxmtest
 if(boxmtest$p.value < 0.05){'H0 debe rechazarse: hay evidencia de que la covarianza no es igual en todos los grupos'} else {'Se puede aceptar que la matriz de covarianza es igual en todos los grupos'}
 ```
 
-## Estimación de parámetros de la función de densidad (u^(X),E) y cálculo de la función discriminante según aproximación de Fisher via lda()
+## Estimación de parámetros de la función de densidad (u\^(X),E) y cálculo de la función discriminante según aproximación de Fisher via lda()
 
 ```{r, eval = LDA}
 modelo_lda <- lda(temp, datos[[{{variable_factor_lda}}]])
@@ -1218,14 +1254,15 @@ paste("trainig_error =", trainig_error, "%")
 partimat(temp, datos[[{{variable_factor_lda}}]], method = "lda", prec = 200)
 ```
 
-
 El test no parece significativo, las observaciones son linealmente separables. No hay normalidad univariante según el Test de Shapiro.
 
-
-
 ##### ARMAR CON VARIOS KERNELS!!!!
+
 ##### ingenuo no CROSVALIDATION!!!
+
 ##### lda O qDA ROBUSTO! VER CUANDO: ELEGIR MATRIZ CON VARIANZA EN FORMA ROBUSTA.
+
+
 
 
 
