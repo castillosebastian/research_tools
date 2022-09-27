@@ -1,0 +1,64 @@
+---
+title: "Regresion_lineal"
+author: "Sebastian Castillo"
+date: "2022-09-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("main.R")
+```
+
+```{r}
+# https://cran.r-project.org/web/packages/jtools/vignettes/summ.html#plot_summs()_and_plot_coefs()
+# # https://stats.stackexchange.com/questions/5135/interpretation-of-rs-lm-output
+```
+
+
+Evaluacion de lm
+- coeficientes: significancia > a 0.05?
+- residuos
+
+```{r}
+pacman::p_load(car)
+data(Duncan)
+fitLS <- lm(income  ~ education, data = Duncan )
+summary(fitLS)
+```
+```{r}
+plot(income  ~ education, data = Duncan, pch=20)
+abline(fitLS)
+```
+
+```{r}
+jtools::plot_summs(fitLS, plot.distributions = TRUE, inner_ci_level = .9)
+```
+```{r}
+par(mfrow=c(2,2))
+plot(fitLS)
+```
+
+```{r}
+res.predict = predict(fitLS, interval = "prediction")
+res.predict
+```
+
+```{r}
+df = bind_cols(Duncan, res.predict)
+
+df %>% 
+  ggplot(aes(x=education, y=income))+
+  geom_point()+
+  geom_line(aes(y=lwr), color = "red", linetype = "dashed")+
+  geom_line(aes(y=upr), color = "red", linetype = "dashed")+
+  geom_smooth(method=lm, se=TRUE) 
+  
+```
+
+```{r}
+anova(fitLS)
+```
+
+
+

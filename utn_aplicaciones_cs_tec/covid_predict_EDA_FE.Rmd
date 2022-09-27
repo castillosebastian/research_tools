@@ -1,0 +1,162 @@
+---
+title: 'Análisis Inteligente de Datos: Segundo Parcial'
+author: "Claudio Sebastián Castillo"
+date: "`r format(Sys.Date(), '%d de %B de %Y') `"
+output:
+  pdf_document: 
+    number_sections: true
+    toc: true 
+    toc_depth: 3  
+linestretch: 1
+params:
+  AnalisisIntegrador: no
+  EDA: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F, comment=NA )
+knitr::opts_chunk$set(fig.align = 'center')
+source("Unidad0_repos_and_tools.R")
+
+```
+
+```{r, params}
+AI = params$AnalisisIntegrador
+EDA = params$EDA
+
+```
+
+```{r, tools}
+multieda <- function(list, df = 1){
+  
+  lista_resultados <- list()
+  
+  # CV = proporcion que representa el desvıo estandar de la media aritmetica
+  lista_resultados$coeficiente_variacion <- list[[df]] %>% 
+    dplyr::select_if(is.numeric) %>% 
+    summarise_all(raster::cv, na.rm =T) 
+  
+  lista_resultados$sesgo <- list[[df]] %>% 
+    dplyr::select_if(is.numeric) %>% 
+    summarise_all(moments::skewness) 
+  
+  # Las distribuciones leptocurticas tienen coeficientes superiores a 3 y las
+  # platicurticas coeficientes menores a 3
+  
+  lista_resultados$curtosis <- list[[df]] %>% 
+    dplyr::select_if(is.numeric) %>% 
+    summarise_all(moments::kurtosis)
+  
+  # Estadística Robusta
+  
+  # Median Absolute Deviation= mediana de los desvıos absolutos respecto de la mediana
+  lista_resultados$mad <- list[[df]] %>% 
+    dplyr::select_if(is.numeric) %>% 
+    summarise_all(mad)
+  
+  # grafico de correlacion
+  lista_resultados$m_correlacion <- list[[df]] %>%
+    select_if(is.numeric) %>% 
+    cor(., use="complete.obs") %>% 
+    round(., 2) 
+  
+  lista_resultados
+}
+
+# Outlier detection
+# iris %>%
+#   rstatix::identify_outliers('Sepal.Width')
+
+```
+
+# EDA
+
+```{r, eval= (EDA | AI)}
+eda_list <- list()
+eda_list$covid <- readRDS("~/R/research_tools/data/covid/datasets/covid_utn2022.rds")
+dataset = 1
+results = multieda(eda_list, dataset)
+```
+
+### structure
+
+```{r, eval=EDA}
+str(eda_list[[dataset]])
+```
+
+### Summary
+
+```{r, eval=EDA}
+summary(eda_list[[dataset]]) #%>% 
+  # kable() %>% 
+  # kable_styling(full_width = F, font_size = 9) %>% 
+  # row_spec(0, angle = 90)
+```
+
+### Control NAs
+
+```{r, eval=EDA}
+eda_list[[dataset]] %>%
+  purrr::map_df(function(x) sum(is.na(x))) %>% head
+```
+
+### Distribución de datos
+
+```{r, eval=EDA, fig.align='center'}
+knit_print(results)
+```
+
+<!-- Las medianas se encuentran cerca de las medias? Si es así podemos pensar que no hay outliers evaluando cada variable por separado, a no ser que haya enmascaramiento. Ver outliers multivariados. -->
+
+### Grafico Correlaciones
+
+```{r}
+corrplot.mixed(results$m_correlacion, order = 'AOE')
+```
+
+### Boxplot variables numericas
+
+```{r, eval=EDA}
+boxplot(eda_list[[dataset]] %>% select_if(is.numeric))
+    
+```
+
+<!-- Hay outliers univariados? -->
+
+### Multigráficos
+
+```{r, eval=EDA, fig.width=20, fig.height=18}
+eda_list[[dataset]][,-1] %>%
+  GGally::ggpairs(., mapping = aes(color = as.factor(Campeón)), upper=list(wrap=list(size=20))) + ###### RENOMBRAR VARIABLE DE GRUPO
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme_bw()
+```
+
+
+# EDA DM en Cs y TEc
+
+1. Dataset COVID
+Ambas variables son fundamentales para ver quién se muere: 
+ARM = asistencia respiratoria mecánica
+Inotrópicos = estimular el corazon
+
+Confirguraciones
+-100+ iteraciones
+-Ver si hay character convertir en ordinal
+-Implementar canaritos
+-"binary"
+-Funcion objetivo optimizar: "AUC"
+
+
+Tema: 
+-lightGBM: max_bin = si es numerico se puede utilizar 1023, o incluirlo en la Bayesiana. 
+-Ojo modificar parametro 'ganancia', llamar 'rmse', unlist(modelocv$record_eval$valid$ 'rmse').
+-BO: minimizar RMSE, nimize True.
+
+
+\pagebreak
+# Sesion
+```{r}
+sessionInfo()
+```
+
