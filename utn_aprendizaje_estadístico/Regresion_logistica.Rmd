@@ -1,0 +1,186 @@
+---
+title: 'Análisis Inteligente de Datos: Segundo Parcial'
+author: "Claudio Sebastián Castillo"
+date: "`r format(Sys.Date(), '%d de %B de %Y') `"
+output:
+  pdf_document: 
+    number_sections: true
+    toc: true 
+    toc_depth: 3  
+linestretch: 1
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F, comment=NA )
+knitr::opts_chunk$set(fig.align = 'center')
+source("Unidad0_repos_and_tools.R")
+
+# PARA EL EXAMEN:
+#   -Trabjar en ejercicios al final del documento
+#   -Armar los análisis en bloque con test disponibles pre-armados
+#   -Convertir todos los objetos del ambiente y avanzar en orden ascentende estricto por chunk:
+#       IMPORTANTE: bases de datos!
+#   -Ejecutar con parametro 'AI' que correrá todo los chunks prearmados más los introducidos en el examen sin eval condicional
+
+# Comparacion de medias en el caso univariado
+# Comparacion de medias en el caso multivariado
+
+```
+
+# Regresión logística (LR)
+## Datos
+
+```{r, eval=(Regresion_Logistica | AI)}
+datos <- data.frame(sexo = c("hombre", "hombre", "mujer", "mujer", "mujer", "hombre",
+                             "mujer", "hombre", "mujer", "mujer", "hombre", "hombre",
+                             "hombre", "hombre", "mujer", "mujer", "hombre", "mujer",
+                             "hombre", "mujer", "hombre", "mujer", "mujer", "hombre",
+                             "hombre", "mujer", "mujer", "mujer", "hombre", "hombre",
+                             "hombre", "mujer", "hombre", "mujer", "hombre", "mujer",
+                             "mujer", "mujer", "mujer", "mujer", "hombre", "mujer",
+                             "hombre", "mujer", "mujer", "mujer", "mujer", "hombre",
+                             "mujer", "hombre", "mujer", "hombre", "mujer", "mujer",
+                             "hombre", "hombre", "hombre", "hombre", "hombre", "hombre",
+                             "hombre", "hombre", "hombre", "mujer", "hombre", "hombre",
+                             "hombre", "hombre", "mujer", "hombre", "mujer", "hombre",
+                             "hombre", "hombre", "mujer", "hombre", "mujer", "mujer",
+                             "hombre", "mujer", "mujer", "mujer", "hombre", "hombre",
+                             "hombre", "hombre", "hombre", "mujer", "mujer", "mujer",
+                             "mujer", "hombre", "mujer", "mujer", "mujer", "mujer",
+                             "mujer", "mujer", "mujer", "mujer","mujer", "mujer",
+                             "hombre", "mujer", "hombre", "hombre", "mujer", "mujer",
+                             "mujer", "hombre","mujer", "hombre", "mujer", "mujer",
+                             "mujer", "hombre", "mujer", "hombre", "mujer", "hombre",
+                             "mujer", "hombre", "mujer", "mujer", "mujer", "mujer",
+                             "mujer", "mujer", "mujer", "mujer", "hombre", "mujer",
+                             "hombre", "hombre", "hombre", "hombre", "hombre", "hombre",
+                             "hombre", "mujer","mujer", "mujer", "hombre", "hombre",
+                             "mujer", "mujer", "hombre", "mujer", "hombre", "hombre",
+                             "hombre", "mujer", "mujer", "mujer", "mujer", "hombre",
+                             "hombre", "mujer", "hombre", "hombre", "mujer", "hombre",
+                             "hombre", "hombre", "hombre", "mujer", "hombre", "hombre",
+                             "mujer", "mujer", "hombre", "hombre", "hombre", "hombre",
+                             "hombre", "mujer", "mujer", "mujer", "mujer", "hombre",
+                             "hombre", "hombre", "mujer", "hombre", "mujer", "hombre",
+                             "hombre", "hombre", "mujer"),
+                    examen_lectura = c(91, 77.5, 52.5, 54, 53.5, 62, 59, 51.5,
+                                       61.5, 56.5, 47.5, 75, 47.5, 53.5, 50, 50,
+                                       49, 59, 60, 60, 60.5, 50, 101, 60, 60,
+                                       83.5, 61, 75, 84, 56.5, 56.5, 45, 60.5,
+                                       77.5, 62.5, 70, 69, 62, 107.5, 54.5, 92.5,
+                                       94.5, 65, 80, 45, 45, 66, 66, 57.5, 42.5,
+                                       60, 64, 65, 47.5, 57.5, 55, 55, 76.5,
+                                       51.5, 59.5, 59.5, 59.5, 55, 70, 66.5,
+                                       84.5, 57.5, 125, 70.5, 79, 56, 75, 57.5,
+                                       56, 67.5, 114.5, 70, 67, 60.5, 95, 65.5,
+                                       85, 55, 63.5, 61.5, 60, 52.5, 65, 87.5,
+                                       62.5, 66.5, 67, 117.5, 47.5, 67.5, 67.5,
+                                       77, 73.5, 73.5, 68.5, 55, 92, 55, 55, 60,
+                                       120.5, 56, 84.5, 60, 85, 93, 60, 65, 58.5,
+                                       85, 67, 67.5, 65, 60, 47.5, 79, 80, 57.5,
+                                       64.5, 65, 60, 85, 60, 58, 61.5, 60, 65,
+                                       93.5, 52.5, 42.5, 75, 48.5, 64, 66, 82.5,
+                                       52.5, 45.5, 57.5, 65, 46, 75, 100, 77.5,
+                                       51.5, 62.5, 44.5, 51, 56, 58.5, 69, 65,
+                                       60, 65, 65, 40, 55, 52.5, 54.5, 74, 55,
+                                       60.5, 50, 48, 51, 55, 93.5, 61, 52.5,
+                                       57.5, 60, 71, 65, 60, 55, 60, 77, 52.5,
+                                       95, 50, 47.5, 50, 47, 71, 65),
+                    clases_repaso = c("0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "0", "0", "0", "0", "0", "0",
+                                      "0", "0", "1", "1", "1", "1", "1", "1",
+                                      "1", "1", "1", "1", "1", "1", "1", "1",
+                                      "1", "1", "1", "1", "1", "1", "1", "1",
+                                      "1", "1", "1", "1", "1", "1", "1", "1",
+                                      "1", "1", "1", "1", "1", "1", "1", "1",
+                                      "1", "1", "1", "1", "1", "1", "1", "1",
+                                      "1", "1", "1", "1", "1", "1", "1", "1",
+                                      "1", "1", "1", "1", "1"))
+
+#daframe
+#datos = readxl::read_xlsx("prostata.xlsx") 
+variable_factor_lr = 'sexo'
+# factorizo variable factor
+datos[[{{variable_factor_lr}}]] = as.factor(datos[[{{variable_factor_lr}}]]) 
+# resumente datos
+str(datos)
+```
+### Boxplot todas las variables
+
+```{r, eval=(Regresion_Logistica | AI)}
+boxplot(datos)
+```
+
+### Box por grupo
+
+```{r, eval=(Regresion_Logistica | AI)}
+datos %>% 
+  ggplot(aes(x = datos[[{{variable_factor_lr}}]], y = examen_lectura)) + # mas variables agregar color o facet
+  geom_boxplot() +
+  theme_bw() 
+```
+
+### Box por variable
+
+```{r, eval=(Regresion_Logistica | AI)}
+datos %>% 
+  pivot_longer(names_to = 'variables', values_to = 'cantidad', - variable_factor_lr) %>% 
+  rename(grupo = variable_factor_lr) %>% 
+  ggplot(aes(x=variables, y=cantidad, fill=grupo)) + 
+  geom_boxplot() +
+  facet_wrap(~variables, scales = 'free')
+```
+
+```{r, eval=(Regresion_Logistica | AI)}
+modelo_glm <- glm(Rotura ~ PSA + Gleason, data = datos, family = "binomial")
+summary(modelo_glm)
+```
+
+### P valores
+
+```{r, eval=(Regresion_Logistica | AI)}
+coef(summary(modelo_glm))[,4]
+```
+
+```{r, eval=(Regresion_Logistica | AI)}
+predicciones <- ifelse(test = modelo_glm$fitted.values > 0.5, yes = 1, no = 0)
+matriz_confusion <- table(modelo_glm$model[[variable_factor_lr]], predicciones,
+                          dnn = c("observaciones", "predicciones"))
+matriz_confusion
+```
+
+```{r, eval=(Regresion_Logistica | AI)}
+mosaic(matriz_confusion, shade = T, colorize = T,
+       gp = gpar(fill = matrix(c("green3", "red2", "red2", "green3"), 2, 2)))
+```
+
+<!-- Acorde al modelo, el logaritmo de odds de que un estudiante necesite clases de repaso esta negativamente relacionado con la puntuación obtenida en el examen de lectura (coeficiente parcial = -0.02617), siento significativa esta relación (p-value = 0.0324). También existe una relación significativa positiva entre el logaritmo de odds de necesitar clases de repaso y el género del estudiante (p-value = 0.0462), siendo, para un mismo resultado en el examen de lectura, mayor si el estudiante es hombre. En concreto los odds de que un hombre requiera clases de repaso son e0.64749=1.910739 mayores que los de las mujeres. (Esto se puede ver gráficamente representando el modelo para hombres y mujeres). -->
+
+
+
+- Considerando el criterio de Kaiser (más el ajuste derivado de las simulaciones de Montecarlo) que admite autovalores hasta 0.7, las componentes que se emplearían son: `r if(PCA | AI){as.tibble(pca2.nci$eig) %>% mutate('comp' = str_c('comp', 1:nrow(.))) %>% filter(eigenvalue >= 0.7) %>% .$comp}`.              
+
+- Considerando el criterio de variabilidad explicada del componente, eligiendo aquellas cuyo % de variabilidad no sea menor a 5%, las componentes que se emplearían son: `r if(PCA | AI){as.tibble(pca2.nci$eig) %>% mutate('comp' = str_c('comp', 1:nrow(.))) %>% rename(ptje = 'percentage of variance') %>% filter(ptje > 5) %>% .$comp}`.     
+
+
+
+\pagebreak
+# Sesion
+```{r}
+sessionInfo()
+```
+

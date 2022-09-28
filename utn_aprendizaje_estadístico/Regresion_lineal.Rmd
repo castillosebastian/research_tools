@@ -2,49 +2,178 @@
 title: "Regresion_lineal"
 author: "Sebastian Castillo"
 date: "2022-09-16"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 source("main.R")
 ```
 
 ```{r}
 # https://cran.r-project.org/web/packages/jtools/vignettes/summ.html#plot_summs()_and_plot_coefs()
-# # https://stats.stackexchange.com/questions/5135/interpretation-of-rs-lm-output
+# https://stats.stackexchange.com/questions/5135/interpretation-of-rs-lm-output
+# Evaluacion de lm
+# - coeficientes: significancia > a 0.05?
+# - residuos
 ```
 
-
-Evaluacion de lm
-- coeficientes: significancia > a 0.05?
-- residuos
-
 ```{r}
+# Data
 pacman::p_load(car)
-data(Duncan)
-fitLS <- lm(income  ~ education, data = Duncan )
-summary(fitLS)
-```
-```{r}
-plot(income  ~ education, data = Duncan, pch=20)
-abline(fitLS)
+df =  Duncan
 ```
 
-```{r}
-jtools::plot_summs(fitLS, plot.distributions = TRUE, inner_ci_level = .9)
-```
-```{r}
-par(mfrow=c(2,2))
-plot(fitLS)
-```
+# Introduccion
+
+Bibliografía: "Regresión simple.pdf"
+
+# Composición del dataset
 
 ```{r}
-res.predict = predict(fitLS, interval = "prediction")
-res.predict
+skimr::skim(df)
 ```
+# Correlacion
 
 ```{r}
+GGally::ggpairs(df, lower = list(continuous = "smooth"),
+        diag = list(continuous = "barDiag"), axisLabels = "none")
+```
+
+# Regresion Lineal
+
+```{r}
+model <- lm(income  ~ education, data = df )
+s = summary(model)
+s
+```
+
+# Intervalos de confianza para los coeficientes β0 y β1
+
+Vemos los coefcientes y entre parentesis los intervalos de confianza respectivos. La estimación de todo coeficiente de regresión tiene asociada un error estándar, por lo tanto todo coeficiente de regresión tiene su correspondiente intervalo de confianza.
+
+```{r}
+model %>% 
+  pubh::glm_coef()
+```
+
+# Conclusiones
+
+```{r}
+m_output = tidy(s, conf.int = TRUE)
+m_output
+s_output = broom::glance(s) 
+s_output
+```
+
+```{r, echo=F}
+
+if(s_output$p.value > 0.05){"El p-value del estadístico F no es significativo para un α=0.05, luego el predictor no tiene asociación significativa sobre la variable respuesta"}else{"El p-value del estadístico F es significativo para un α=0.05, luego el predictor tiene asociación significativa con la variable respuesta, el modelo es útil."}
+paste0("Al tratarse de un modelo simple, el p-value de estadístico F es el mismo que el p-value del estadístico t del único predictor incluido en el modelo: ", m_output$term[2])
+paste0("Residual standar error (RSE): En promedio, cualquier predicción del modelo se aleja ", round(s_output$sigma, digits = 2)," unidades del verdadero valor.")
+paste0("R2: El predictor '", m_output$term[2], "' empleado en el modelo es capaz de explicar el ", round(s_output$r.squared*100,digits = 2), "% de la variabilidad observada en los datos. La ventaja de R2 es que es independiente de la escala en la que se mida la variable respuesta, por lo que su interpretación es más sencilla.")
+paste0("Intercepto (β0): El valor promedio de la variable respuesta cuando '",m_output$term[2], "' es 0 es de ", round(m_output$estimate[1], digits = 2), " unidades.")
+if(m_output$estimate[2] > 0){variacion = "aumenta"}else{variacion = "disminuye"}
+paste0("Predictor (β1): por cada unidad que se incrementa el predictor '", m_output$term[2], "' el valor de la variable respuesta '", variacion, "' en promedio ", round(m_output$estimate[2], digits = 2), " unidades.")
+```
+
+## ecuación del modelo
+
+```{r, echo=F}
+beta_0 = model$coefficients[[1]]
+beta_1 = model$coefficients[[2]]
+paste0("La ecuación lineal de regresión sería:  Y = ", round(beta_0, digits = 2), " + ",round(beta_1, digits = 2), " * X + E")
+```
+
+# Estimación para un valor particular.
+
+```{r}
+nuevo<-data.frame(education=80)
+predict.lm(model,newdata=nuevo)
+```
+
+# Diagnósticos del modelo lineal
+
+Supuestos del modelo:
+
+- linealidad
+- independencia de los residuos
+- normalidad de los residuos
+- homogeneidad de la varianza u homosedasticidad
+
+
+Una de las mejores formas de confirmar que las condiciones necesarias para un modelo de regresión lineal simple por mínimos cuadrados se cumplen es mediante el estudio de los residuos del modelo.    
+
+En R, los residuos se almacenan dentro del modelo bajo el nombre de residuals. R genera automáticamente los gráficos más típicos para la evaluación de los residuos de un modelo.   
+
+```{r}
+library(ggfortify)
+autoplot(model)
+```
+
+plot1: Media cero, hay heterocesdasticidad, problemas de linealidad (conos-canales).
+plot2: evidencias claras de heterocesdasticidad, muestra la existencia de datos atípicos.
+plot3: muestra la existencia de datos atípicos.
+
+Los residuos confirman que los datos no se distribuyen de forma lineal, ni su varianza constante (plot1). Además se observa que la distribución de los residuos no es normal (plot2). Algunas observaciones tienen un residuo estandarizado absoluto mayor de 3 (1.73 si se considera la raíz cuadrada) lo que es indicativo de observación atípica (plot3). Valores de Leverages (hat) mayores que 2.5x((p+1)/n), siendo p el número de predictores y n el número de observaciones, o valores de Cook mayores de 1 se consideran influyentes (plot4). Todo ello reduce en gran medida la robustez de la estimación del error estándar de los coeficientes de correlación estimados y con ello la del modelo es su conjunto.
+
+# Datos outliers
+
+```{r}
+model %>% olsrr::ols_plot_cooksd_bar()
+```
+
+# Outliers o puntos con alta influencia 
+
+Otra forma de identificar las observaciones que puedan ser outliers o puntos con alta influencia (leverage) es emplear las funciones rstudent() y hatvalues().
+
+```{r}
+
+plot(x = model$fitted.values, y = abs(rstudent(model)),
+     main = "Absolute studentized residuals vs predicted values", pch = 20,
+     col = "grey30")
+abline(h = 3, col = "red")
+
+```
+
+En este caso muchos de los valores parecen posibles outliers o puntos con alta influencia porque los datos realmente no se distribuyen de forma lineal en los extremos.
+
+# Normalidad en los residuos
+
+```{r}
+jtools::plot_summs(model, plot.distributions = TRUE, inner_ci_level = .9)
+```
+
+\pagebreak
+
+## Dataset aumentado con estimaciones del modelo lineal
+
+```{r}
+model %>% broom::augment() %>% as_tibble() %>% head()
+```
+
+## Graficos de Regresion, con coeficiente de correlación de Pearson y p-value
+
+```{r}
+ggpubr::ggscatter(df, x = "income", y = "education",
+   #color = "black", shape = 21, size = 3, # Points color, shape and size
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
+   conf.int = TRUE, # Add confidence interval
+   cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+   cor.coeff.args = list(method = "pearson", label.x = 3, label.sep = "\n")
+   )
+```
+
+## Grafico con Intervalo de confianza e intervalo de predicción
+
+Como es de esperar ambos intervalos están centrados en torno al mismo valor. Si bien ambos parecen similares, la diferencia se encuentra en que los intervalos de confianza se aplican al valor promedio que se espera de y para un determinado valor de x, mientras que los intervalos de predicción no se aplican al promedio. Por esta razón, los segundos siempre son más amplios que los primeros.
+
+```{r}
+res.predict = predict(model, interval = "prediction")
+
 df = bind_cols(Duncan, res.predict)
 
 df %>% 
@@ -56,8 +185,23 @@ df %>%
   
 ```
 
+## Test sobre Normalidad de Residuos
+
 ```{r}
-anova(fitLS)
+residuos<-resid(model)
+ks.test(residuos,"pnorm")
+```
+```{r}
+qqnorm(residuos)
+qqline(residuos)
+```
+
+## Anoval del modelo
+
+Ajuste global del modelo (ANOVA): Partición de varianza: qué parte de la variabilidad de la respuesta es explicada por su relación con las variables predictoras y qué parte no es explicada por dicha relación (residual).Esto permitirá contrastar si el modelo es significativo o no.
+
+```{r}
+anova(model)
 ```
 
 
