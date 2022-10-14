@@ -29,6 +29,8 @@ source("main.R")
 
 En este documento presentó un ejemplo 'de libro' de regresión lineal multiple con su correspondiente evaluación.    
 
+Dejo aquí el link al documento RMarddown: <https://github.com/castillosebastian/research_tools/blob/df89b21be941f50b905ac531dbf219d16f76a896/regresion_lineal_multiple.Rmd>
+
 Los datos de la vivienda contienen 506 secciones censales de Boston del censo de 1970. La base de datos Boston Housing contiene los datos originales de Harrison y Rubinfeld (1979), el marco de datos BostonHousing 2 es la versión corregida con información espacial adicional.
 
 Esta informaci?n esta incluida en la biblioteca mlbench o descargar el conjunto de datos. Los datos tienen las siguientes características, siendo medv la variable de objetivo o independiente:
