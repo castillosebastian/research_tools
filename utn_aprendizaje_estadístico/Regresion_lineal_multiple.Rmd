@@ -1,0 +1,561 @@
+---
+title: "Regresion_lineal"
+author: "Sebastian Castillo"
+date: "`r format(Sys.Date(), '%d de %B de %Y') `"
+output:
+  html_document:
+    df_print: paged
+    number_sections: true
+    toc: true 
+    toc_depth: 3  
+linestretch: 1
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
+knitr::opts_chunk$set(fig.width = 8, fig.height = 8, fig.align = 'center')
+source("main.R")
+
+####################################
+
+        # cambiar dataset
+        # cambiar target
+        # cambiar predictor
+
+####################################
+```
+
+```{r, echo=FALSE}
+# https://www.cienciadedatos.net/documentos/25_regresion_lineal_multiple
+# seleccion del modelo
+# https://rpubs.com/Joaquin_AR/242707
+```
+
+```{r}
+# tools
+model_equation <- function(model, ...) {
+  format_args <- list(...)
+  
+  model_coeff <- model$coefficients
+  format_args$x <- abs(model$coefficients)
+  model_coeff_sign <- sign(model_coeff)
+  model_coeff_prefix <- case_when(model_coeff_sign == -1 ~ " - ",
+                                  model_coeff_sign == 1 ~ " + ",
+                                  model_coeff_sign == 0 ~ " + ")
+  model_eqn <- paste(strsplit(as.character(model$call$formula), "~")[[2]], # 'y'
+                     "=",
+                     paste(if_else(model_coeff[1]<0, "- ", ""),
+                           do.call(format, format_args)[1],
+                           paste(model_coeff_prefix[-1],
+                                 do.call(format, format_args)[-1],
+                                 " * ",
+                                 names(model_coeff[-1]),
+                                 sep = "", collapse = ""),
+                           sep = ""))
+  return(model_eqn)
+}
+```
+
+```{r, echo=FALSE}
+# Data
+# pacman::p_load(car)
+# df =  Duncan
+# df = MASS::phones %>% as_tibble()
+# df = MASS::Boston %>% as_tibble()
+# df = datarium::marketing
+#df = demanda <- fread("~/R/research_tools/utn_aprendizaje_estadístico/Regresion_Lineal/Guía de Ejercicios I-20220927/demanda.csv", dec=',')
+df <- fread("~/R/research_tools/utn_aprendizaje_estadístico/coches.csv", dec=',')
+# Data transformation
+df = df %>% mutate_all(as.numeric) %>% as_tibble()
+
+df <- df %>% 
+  mutate(origen = factor(origen, levels = c(1, 2, 3), labels = c("EEUU.", "Europa", "Japon")))
+```
+
+# Introduccion
+
+En el presente análisis se solicita estudiar la dependencia existente entre ciertas características de automóviles y su consumo. Es decir, se desea comprobar cuáles de las variables provistas en el archivo coches.csv (8 variables y 406 filas) afectan al consumo de los vehículos. 
+
+Las variables son: 
+
+- CONSUMO (la variable dependiente o target): Consumo (l/100Km)		
+- MOTOR: Cilindrada en cc		
+- CV: Potencia (CV)				
+- PESO:	Peso total (kg)				
+- ACEL: Aceleración 0 a 100 km/h (en segundos)			
+- ANIO:	Año del modelo			
+- CILINDR: Número de cilindros 
+- ORIGEN: País o Continente de origen	
+
+## Composición del dataset
+
+A continuación veremos la composición de los datos, antes de crear el modelo de regresión lineal.   
+
+```{r}
+skimr::skim(df)
+```
+
+De los datos precedentes podemos advertir que: hay valores faltantes en consumo, cv, peso, cilindrada y origen. Que la variable categórica 'origen' tiene proporciones desiguales entre las distintas categorías. Que hay variables que no tienen distribución normal, ejemplos: cv y motor. Entonces, en principio, procederemos a descartar las observaciones con valores faltantes y a crear una factorizar la categoría origen para representar los países.      
+
+```{r}
+df = na.omit(df)
+```
+
+## Correlacion 
+
+Inspeccionamos la correlación entre la variable predictora y variable respuesta.    
+
+```{r, echo=F, fig.height=20, fig.width=14}
+GGally::ggpairs(df, lower = list(continuous = "smooth"),
+        diag = list(continuous = "barDiag"), axisLabels = "none")
+```
+
+Como era esperable las variables que tienen una mayor relación lineal con el consumo son: motor, cilindrada y peso (todas positivas). 
+Vemos que, por otro lado, dichas variables tiene alta correlación, por lo que podrían considerarse alguna de ellas para su exclusión en aras de la simpleza del modelo.     
+
+
+# Punto 1: Regresión de Consumo a partir del Peso
+
+```{r, echo=F}
+library(kableExtra)
+model <- lm(consumo ~ peso, data = df )
+s = summary(model) 
+s
+```
+## Evaluación del modelo
+
+```{r}
+m_output = tidy(s, conf.int = TRUE)
+m_output 
+```
+
+**Bondad de Ajuste**
+
+```{r, echo=F, message=F, warning=F}
+s_output = broom::glance(s)
+s_output
+if(m_output$estimate[2] > 0){variacion = "aumenta"}else{variacion = "disminuye"}
+```
+
+```{r, echo=F, results='asis'}
+
+if(s_output$p.value > 0.05){cat("El p-value del estadístico F no es significativo para un α=0.05, luego el predictor no tiene asociación significativa sobre la variable respuesta")}else{cat("El p-value del estadístico F es significativo para un α=0.05, luego el predictor tiene asociación significativa con la variable respuesta, el modelo es útil.")}
+cat(paste0("Al tratarse de un modelo simple, el p-value de estadístico F es el mismo que el p-value del estadístico t del único predictor incluido en el modelo: ", m_output$term[2],"."))
+cat(paste0("Sobre el 'residual standar error (RSE)': En promedio, cualquier predicción del modelo se aleja ", round(s_output$sigma, digits = 2)," unidades del verdadero valor."))
+cat(paste0("R2: El predictor '", m_output$term[2], "' empleado en el modelo es capaz de explicar el ", round(s_output$r.squared*100,digits = 2), "% de la variabilidad observada en los datos. La ventaja de R2 es que es independiente de la escala en la que se mida la variable respuesta, por lo que su interpretación es más sencilla."))
+cat(paste0("Intercepto (β0): El valor promedio de la variable respuesta cuando '",m_output$term[2], "' es 0 es de ", round(m_output$estimate[1], digits = 2), " unidades."))
+cat(paste0("Predictor (β1): por cada unidad que se incrementa el predictor '", m_output$term[2], "' el valor de la variable respuesta '", variacion, "' en promedio ", round(m_output$estimate[2], digits = 2), " unidades."))
+```
+## Gráfico de regresión y bandas de confianza   
+
+```{r}
+df_temp = df %>% dplyr::select(consumo, peso)
+
+res.predict = predict(model, interval = "prediction")
+
+df_temp = bind_cols(df_temp, res.predict)
+
+df_temp %>%
+  ggplot(aes(x=peso, y=consumo))+
+  geom_point()+
+  geom_line(aes(y=lwr), color = "red", linetype = "dashed")+
+  geom_line(aes(y=upr), color = "red", linetype = "dashed")+
+  geom_smooth(method=lm, se=TRUE)
+```
+
+Del gráfico precedente advertimos que aunque hay linealidad, existe un error residual importante en torno a los valores de regresión, que caen por fuera del intervalo de confianza 95%. Incluso se advierte que hay valores por fuera del intervalo de predicción.   
+
+## Intervalos de confianza para los coeficientes β0 y β1
+
+Todo coeficiente de regresión tiene asociada un error estándar, por lo tanto todo coeficiente de regresión tiene su correspondiente intervalo de confianza. En este caso vemos que el intervalo de confianza de 95% de la variable peso no contienen 0, por lo que se considera que tiene significancia como regresora.     
+
+```{r}
+summ(model, confint = TRUE, digits = 3, )
+```
+
+Identica conclusión cabe formular para un intervalo de 99%.    
+
+## Estimación de consumo para pesos especìficos
+
+Considerando los siguientes pesos 1 = 280, 2 = 780 y 3 = 900, tenemos las siguientes estimaciones:    
+
+```{r}
+nuevo<-data.frame(peso=c(280, 780, 900))
+round(predict.lm(model,newdata=nuevo), digits = 2)
+```
+
+Considero que las estimaciones formuladas son confiables salvo el caso del consumo de un auto de 280. Entiendo que en ese caso particular el modelo no tiene muestras a partir de las cuales inferir predicciones precisas, con bajo nivel de error. 
+
+# Punto 2: Regresion Lineal Multiple con variables numéricas
+
+Creamos el modelo de regresión lineal multiple, partiendo de considerar como predictores a todas las varibles disponibles (salvo origen) y analizaremos sus resultados.    
+
+<!-- Características: -->
+<!-- - el aprendizaje que hace el algoritmo para estimar los coeficientes de la regresión se basa en minimizar la suma del cuadrado de los residuos.  -->
+
+```{r, echo=F}
+library(kableExtra)
+df = df %>% dplyr::select(-origen, -id)
+model <- lm(consumo ~ ., data = df )
+s = summary(model) 
+#summ(model, digits = 3)
+s
+```
+
+## Intervalos de confianza para los coeficientes β0 y β1
+
+A continuación veremos los coefcientes y entre parentesis los intervalos de confianza respectivos. La estimación de todo coeficiente de regresión tiene asociada un error estándar, por lo tanto todo coeficiente de regresión tiene su correspondiente intervalo de confianza. Si dicho intervalo contiene 0, la variable carece de significancia para el modelo.
+
+```{r}
+summ(model, confint = TRUE, digits = 3)
+```
+
+## Calculamos R parcial
+
+```{r}
+rsq::rsq.partial(model) %>% knitr::knit_print()
+```
+
+## Conclusiones
+
+```{r}
+m_output = tidy(s, conf.int = TRUE)
+var_low_pvalue = str_c(m_output$term[m_output$p.value < 0.05], collapse = ", ")
+var_high_pvalue = str_c(m_output$term[m_output$p.value > 0.05], collapse = ", ")
+```
+
+```{r, echo=F, message=F, warning=F}
+s_output = broom::glance(s)
+if(m_output$estimate[2] > 0){variacion = "aumenta"}else{variacion = "disminuye"}
+```
+
+```{r, echo=F, results='asis'}
+
+if(s_output$p.value > 0.05){cat("El p-value del estadístico F no es significativo para un α=0.05, luego los predictores no tiene asociación significativa con la variable respuesta")}else{cat("El p-value del estadístico F es significativo para un α=0.05, luego al menos un predictor tiene asociación significativa con la variable respuesta, el modelo es útil.")}
+if(length(var_high_pvalue) > 0){cat("El p-value de las variables predictoras:", var_high_pvalue, " no es significativo para un α=0.05, como vimos en el estudio inicial dichas variables tiene alta correlación con peso, dado ello podrían eliminarse para mejorar el modelo.")}
+if(length(var_low_pvalue) > 0){cat("El p-value de las variables predictoras:", var_low_pvalue, " son significativos para un α=0.05, luego dichos predictores tiene asociación significativa con la variable respuesta y pueden considerarse para integrar el modelo.")}
+cat(paste0("Sobre el 'residual standar error (RSE)': Cualquier predicción del modelo se aleja en promedio ", round(s_output$sigma, digits = 2)," unidades del verdadero valor de regresión."))
+cat(paste0("R2: En los modelos lineales múltiples, cuantos más predictores se incluyan en el modelo mayor es el valor de R2, ya que, por poco que sea, cada predictor va a explicar una parte de la variabilidad observada en Y. Es por esto que R2 no puede utilizarse para comparar modelos con distinto número de predictores. En cambio R2_ajustado introduce una penalización al valor de R2 por cada predictor que se introduce en el modelo. El valor de la penalización depende del número de predictores utilizados y del tamaño de la muestra, es decir, del número de grados de libertad. En el caso bajo estudio el modelo empleado es capaz de explicar el ", round(s_output$adj.r.squared *100,digits = 2), "% de la variabilidad observada en los datos."))
+# cat(paste0("Predictor (β1): por cada unidad que se incrementa el predictor '", m_output$term[2], "' el valor de la variable respuesta '", variacion, "' en promedio ", round(m_output$estimate[2], digits = 2), " unidades."))
+# La lectura de los coeficientes en la regresión múltiple tiene una interpretación particular. Cada coeficiente representa el efecto promedio que el incremento de una unidad de la variable considerada genera en la respuesta manteniendo todas las demás iguales.
+```
+
+**Ecuación del modelo:**
+
+```{r, results='asis'}
+cat(paste0("La ecuación lineal de regresión es: ", model_equation(model, digits = 3, trim = TRUE)))
+```
+
+## Nuevo modelo con selección de los mejores predictores
+
+<!-- La evaluación de un modelo de regresión múltiple así como la elección de qué predictores se deben de incluir en el modelo es uno de los pasos más importantes en la modelización estadística. A la hora de seleccionar los predictores que deben formar parte del modelo se pueden seguir varios métodos, desde emplear el criterio del analista (se introducen predictores determinados en base a conocimiento del campo) hasta métodos más sofisticados como método paso a paso (stepwise) que emplean criterios matemáticos para decidir qué predictores contribuyen significativamente al modelo y en qué orden se introducen. Dentro de este método se diferencias tres estrategias: Dirección forward (el modelo inicial no contiene ningún predictor, solo el parámetro β0, a partir de este se generan todos los posibles modelos introduciendo una sola variable de entre las disponibles por iteracion, aquella variable que mejore en mayor medida el modelo se selecciona) dirección backward (el modelo se inicia con todas las variables disponibles incluidas como predictores, y se prueba a eliminar una a una cada variable, si se mejora el modelo, queda excluida) y Doble o mixto (se trata de una combinación de la selección forward y backward. Se inicia igual que el forward pero tras cada nueva incorporación se realiza un test de extracción de predictores no útiles como en el backward).     -->
+
+<!-- El método paso a paso requiere de algún criterio matemático para determinar si el modelo mejora o empeora con cada incorporación o extracción. Existen varios parámetros empelados, de entre los que destacan el Cp, AIC, BIC y R2ajustado, cada uno de ellos con ventajas e inconvenientes. El método Akaike(AIC) tiende a ser más restrictivo e introducir menos predictores que el R2-ajustado. -->
+
+<!-- BIC and AIC , cuando más chico mejor, This suggests that the benefits of enhanced explanatory power outweigh the cost of increasing model complexity, according to both information criteria. -->
+
+```{r, echo=T}
+model_subset = step(
+              object    = lm(consumo ~ ., data = df),
+              direction = "backward",
+              scope     = list(upper = ~., lower = ~1),
+              trace     = T)
+```
+
+```{r}
+summary(model_subset)
+```
+
+**Ecuación del nuevo modelo seleccionado en base al criterio AIC:**
+
+```{r, results='asis'}
+cat(paste0("La ecuación lineal de regresión es: ", model_equation(model_subset, digits = 3, trim = TRUE)))
+```
+```{r}
+library(leaps)
+regsubsets.out <-
+  regsubsets(consumo ~ .,
+         data = df,
+         nbest = 1,       # 1 best model for each number of predictors
+         nvmax = NULL,    # NULL for no limit on number of variables
+         force.in = NULL, force.out = NULL,
+         method = "exhaustive")
+summary(regsubsets.out)
+```
+
+## Estructura del mejor modelo según BIC
+
+<!-- BIC más chico MEJOR! -->
+
+```{r}
+mejor_modelo_bic  = which(summary(regsubsets.out)$bic == min(summary(regsubsets.out)$bic))
+# Para determinar la estructura del modelo 3 identificado en la salida anterior usamos:
+summary(regsubsets.out)$which[mejor_modelo_bic, ]
+```
+
+```{r}
+model_full = model
+```
+
+## Comparacion modelo con subselección de variables con criterio: BIC
+
+<!-- Metodo de informaciòn bayesiana, normalmente empleada en modelos de pocas regresosar, penaliza con mayor rigurosidad el sobreajuste que el AIC -->
+
+```{r}
+BIC(model_full,model_subset)
+```
+
+## Comparacion modelo con subselección de variables con criterio: AIC
+
+<!-- AIC más chico MEJOR! -->
+
+```{r}
+AIC(model_full,model_subset)
+```
+## Anova para comparar la relevancia del modelo considerando los predictores que se emplean en cada caso
+
+```{r, echo=F,}
+anova_result =stats::anova(model_full, model_subset)
+anova_result
+```
+
+```{r,  results='asis'}
+if(anova_result$`Pr(>F)`[2]<0.05){'H0 debe rechazarse: hay una diferencia significativa en el modelo agregando todas las variables predictoras'} else {'No hay evidencia para rechazar H0, luego el modelo no mejora considerando todas las variables predictoras'}
+```
+
+<!-- As you can see, the result shows a Df of 1 (indicating that the more complex model has one additional parameter), and a very small p-value (< .001). This means that adding the clarity IV to the model did lead to a significantly improved fit over the model 1. -->
+
+## Se puede modelar todo el espacio de posibilidad?
+
+Considerando las posiblidad de cómputo disponibles podemos ajustar todos los modelos posibles, y seleccionar aquél con mejor performance según el criterio de referencia (i.e. Rajustado, AIC, etc.). En este caso, presentamos los 10 mejores modelos ordenados por valor de AIC.
+
+<!-- Fits all regressions involving one regressor, two regressors, three regressors, and so on. It tests all possible subsets of the set of potential independent variables. -->
+
+```{r, echo=T}
+library(olsrr)
+all_models <- lm(consumo ~ ., data = df)
+k = ols_step_all_possible(all_models)
+k %>% arrange(aic) %>% select(-predictors) %>% head(10) %>% #glimpse() %>% tidy()
+  glimpse()
+```
+
+El mejor modelo de la tabla precedente tiene las siguientes variables prdictoras
+
+```{r,  results='asis'}
+mejor = k %>% arrange(aic) %>% slice(1)
+mejor$predictors
+```
+
+```{r}
+model_final = model_subset
+```
+
+## Gráfico de importancia de las variables predictoras
+
+```{r}
+library(relaimpo) 
+crlm <- calc.relimp(model_final)
+plot(crlm)
+```
+
+## Diagnósticos del modelo lineal trabajado
+
+<!-- Supuestos del modelo: -->
+
+<!-- - linealidad -->
+<!-- - independencia de los residuos -->
+<!-- - normalidad de los residuos -->
+<!-- - homogeneidad de la varianza u homosedasticidad -->
+<!-- - Parsimonia: Este término hace referencia a que el mejor modelo es aquel capaz de explicar con mayor precisión la  -->
+<!--        variabilidad observada en la variable respuesta empleando el menor número de predictores, 
+            por lo tanto, con menos asunciones. -->
+
+<!-- To address this problem, instead of plotting the residuals, we can plot the studentized residuals,  -->
+<!-- computed by dividing each residual ei by its estimated standard studentized error. Observations  -->
+<!-- whose studentized residuals are greater than 3 in abso residual lute value are possible outliers.  -->
+
+Una de las mejores formas de confirmar que las condiciones necesarias para un modelo de regresión lineal simple por mínimos cuadrados se cumplen es mediante el estudio de los residuos del modelo.
+
+<!-- En R, los residuos se almacenan dentro del modelo bajo el nombre de residuals. R genera automáticamente los gráficos más típicos para la evaluación de los residuos de un modelo. -->
+
+<!-- Variabilidad constante de los residuos (homocedasticidad): La varianza de los residuos debe de ser constante en todo el rango de observaciones. Para comprobarlo se representan los residuos. Si la varianza es constante, se distribuyen de forma aleatoria manteniendo una misma dispersión y sin ningún patrón específico. Una distribución cónica es un claro identificador de falta de homocedasticidad. -->
+
+```{r, echo=F}
+library(ggfortify)
+autoplot(model_final)
+```
+
+En principio se advierte en el primer gráfico cierto patrón en los residuos, representados por rectas de puntos. Por otro lado, se advierten valores anómalos señalados en el gráfico QQ, cuyo impacto analizaremos a continuación.    
+
+## Relación de las variables del modelo consideradas particularmente y los residuos
+
+En los siguientes gráficos de las variables consideradas particularmente vemos 'cilindrada' presenta residuos con una distribución particular, señalando posiblemente distintas poblaciones en los datos.
+
+```{r, fig.height=20, fig.width=14, fig.align='center'}
+# library(ggplot2)
+# library(gridExtra)
+# plot1 <- ggplot(data = df, aes(youtube, model_final$residuals)) +
+#     geom_point() + geom_smooth(color = "firebrick") + geom_hline(yintercept = 0) +
+#     theme_bw()
+# plot2 <- ggplot(data = df, aes(facebook, model_final$residuals)) +
+#     geom_point() + geom_smooth(color = "firebrick") + geom_hline(yintercept = 0) +
+#     theme_bw()
+# plot3 <- ggplot(data = df, aes(newspaper, model_final$residuals)) +
+#     geom_point() + geom_smooth(color = "firebrick") + geom_hline(yintercept = 0) +
+#     theme_bw()
+# # plot4 <- ggplot(data = df, aes(rad, model_final$residuals)) +
+# #     geom_point() + geom_smooth(color = "firebrick") + geom_hline(yintercept = 0) +
+# #     theme_bw()
+# grid.arrange(plot1, plot2, plot3)
+car::crPlots(model_final)
+```
+## Normalidad de Residuos
+
+A continuación para confirmar esta particularidad en los residuos detectada realizamores pruebas sobre los mismos.     
+
+```{r, echo=F, warning=FALSE, message=F}
+residuos<-resid(model_final)
+ks.test(residuos,"pnorm")
+```
+
+```{r, echo=F}
+qqnorm(residuos)
+qqline(residuos)
+```
+
+```{r, results='asis'}
+shapirotest = shapiro.test(model_final$residuals)
+if(shapirotest$p.value<0.05){'H0 debe rechazarse: no hay normalidad en los residuos'} else {'No hay evidencia para rechazar H0, luego los residuos son normales'}
+```
+
+<!-- ## Variabilidad constante de los residuos (homocedasticidad): -->
+
+<!-- Al representar los residuos frente a los valores ajustados por el modelo, los primeros se tienen que distribuir de forma aleatoria en torno a cero, manteniendo aproximadamente la misma variabilidad a lo largo del eje X.  -->
+
+<!-- ```{r} -->
+<!-- df %>%  -->
+<!--   ggplot(aes(x = model_final$fitted.values, y =model_final$residuals)) + -->
+<!--   geom_point() #+ -->
+<!-- # geom_smooth(color = "firebrick", se = FALSE) + -->
+<!-- # geom_hline(yintercept = 0) + -->
+<!-- #theme_bw() -->
+<!-- ``` -->
+
+```{r}
+ncv_test =  car::ncvTest(model_final)
+print(ncv_test)
+```
+
+```{r, results='asis'}
+if(ncv_test$p <0.05){'H0 debe rechazarse: hay evidencia de falta de homosedasticidad'} else {'No hay evidencias de falta de homocedasticidad'}
+```
+
+Las pruebas precedentes nos llevan a rechazar H0.   
+
+## Independencia 
+
+```{r}
+#Independencia
+#H0:rho=0, no hay correlaci?n entre los residuos
+durbinwat_test = car::durbinWatsonTest(model_final)
+durbinwat_test
+
+```
+
+```{r, results='asis'}
+if(durbinwat_test$p<0.05){'H0 debe rechazarse: hay correlacion entre los residuos'} else {'No hay evidencia para rechazar H0, luego los residuos no presentan correlación'}
+```
+
+## Factor de Inflación de la Varianza
+
+<!-- IF = 1: Ausencia total de colinialidad -->
+<!-- 1 < VIF < 5: La regresión puede verse afectada por cierta colinialidad. -->
+<!-- 5 < VIF < 10: Causa de preocupación -->
+
+<!-- The smallest possible value for VIF is 1, which indicates the complete absence of collinearity.  -->
+<!-- Typically in practice there is a small amount of collinearity among the predictors. -->
+<!-- As a rule of thumb, a VIF value that exceeds 5 or 10 indicates a problematic amount of -->
+<!-- collinearity. ISL -->
+
+<!-- El termino tolerancia es 1/VIF por lo que los límites recomendables están entre 1 y 0.1. -->
+
+Veremos a continuación que existen valores de VIF mayores a 5, que se señalan colinealidad moderada.    
+
+```{r}
+vif = car::vif(model_final) %>% tidy() %>% mutate(x = round(x, digit=2), colinealidad_moderada_entre5y10 = x>5 & x<10,
+                                            colienalidad_severa_mayor10 = x > 10)
+vif
+```
+
+```{r, results='asis'}
+if(any(vif$colinealidad_moderada_entre5y10 | vif$colienalidad_severa_mayor10)){'Hay evidencia de colinealidad entre ciertas variables'} else {'No hay evidencias de colinealidad'}
+```
+
+<!-- # Identificación de posibles valores atípicos  -->
+
+## Datos outliers
+
+A continuación graficaremos los datos empleando la distancia de Cook para resaltar aquellas observaciones influyentes en el modelo.   
+
+```{r, echo=F}
+model_final %>% olsrr::ols_plot_cooksd_bar()
+```
+
+En este caso muchos de los valores parecen posibles outliers o puntos con alta influencia porque los datos realmente no se distribuyen de forma lineal en los extremos.
+
+```{r}
+# library(dplyr)
+# df$studentized_residual <- rstudent(model_final)
+# ggplot(data = df, aes(x = predict(model_final), y = abs(studentized_residual))) +
+# geom_hline(yintercept = 3, color = "grey", linetype = "dashed") +
+# # se identifican en rojo observaciones con residuos estandarizados absolutos > 3
+# geom_point(aes(color = ifelse(abs(studentized_residual) > 3, 'red', 'black'))) +
+# scale_color_identity() +
+# labs(title = "Distribución de los residuos studentizedos",
+#      x = "predicción modelo") + 
+# theme_bw() + theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+<!-- Now, we will incorporate all information from outlier, high-leverage, and influential observations  -->
+<!-- into a single informative plot. I personally find influencePlot() is a very handy function to  -->
+<!-- represent these unusual observation issues. -->
+
+## Grafico de síntesis de valores influyentes 
+
+```{r}
+car::influencePlot(model_final)
+```
+
+<!-- Leverages (hat): Se consideran observaciones influyentes aquellas cuyos valores hat superen 2.5((p+1)/n), siendo p el número de predictores y n el número de observaciones. -->
+<!-- Distancia Cook (cook.d): Se consideran influyentes valores superiores a 1. -->
+
+Los análisis muestran observaciones influyentes (StudenRes mayores abs(3))  
+
+<!-- ## Ecuación del modelo -->
+
+<!-- ```{r, echo=F, results='asis'} -->
+<!-- beta_0 = model_final$coefficients[[1]] -->
+<!-- beta_1 = model_final$coefficients[[2]] -->
+<!-- cat(paste0("La ecuación lineal de regresión sería:  Y = ", round(beta_0, digits = 2), " + ",round(beta_1, digits = 2), " * X + E")) -->
+<!-- ``` -->
+
+<!-- ## Estimación para un valor particular. -->
+
+<!-- ```{r} -->
+<!-- nuevo<-data.frame(duracion=80) -->
+<!-- predict.lm(model_final,newdata=nuevo) -->
+<!-- ``` -->
+
+<!-- ## Dataset aumentado con estimaciones del modelo lineal -->
+
+<!-- ```{r, echo=F} -->
+<!-- atipicos = model_final %>% broom::augment() %>% as_tibble() -->
+<!-- ``` -->
+
+<!-- ```{r, results='asis'} -->
+<!-- paste0("Los valores atípicos son: ", str_c(which(abs(atipicos$.std.resid)>3), collapse = ",")) -->
+<!-- ``` -->
+
+
+

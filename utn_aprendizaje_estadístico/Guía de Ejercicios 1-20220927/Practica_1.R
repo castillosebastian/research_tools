@@ -73,10 +73,28 @@ scatter3D(x=marketing$youtube,
           ylab="Facebook",
           zlab="Sales")
 
+# matriz de correlacion
+cormarketing <- cor(marketing)
+corrplot::corrplot.mixed(cormarketing, order = 'AOE')
+
+GGally::ggpairs(marketing)
+
+
 #b)Plantear el modelo
 model_all <-lm(sales ~ youtube+facebook +newspaper,
                data=marketing)
 summary(model_all)
 
 sales=3.52+0.04*youtube+0.188*facebook-0.001*newspaper
+
+regsubsets(sales ~ .,
+           data=marketing,
+           nbest = 1,
+           nvmax = NULL, 
+           method = "backward")
+
+# evaluaciones con otros criterios
+# AIC(modell_all, model_red)
+# BIC
+
 

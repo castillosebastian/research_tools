@@ -1,5 +1,5 @@
 ---
-title: 'Análisis Inteligente de Datos: Segundo Parcial'
+title: 'Regresion Logística'
 author: "Claudio Sebastián Castillo"
 date: "`r format(Sys.Date(), '%d de %B de %Y') `"
 output:
@@ -11,10 +11,9 @@ linestretch: 1
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = F, warning = F, message = F, comment=NA )
-knitr::opts_chunk$set(fig.align = 'center')
-source("Unidad0_repos_and_tools.R")
-
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
+knitr::opts_chunk$set(fig.width = 8, fig.height = 8, fig.align = 'center')
+source("main.R")
 # PARA EL EXAMEN:
 #   -Trabjar en ejercicios al final del documento
 #   -Armar los análisis en bloque con test disponibles pre-armados
@@ -119,6 +118,7 @@ datos[[{{variable_factor_lr}}]] = as.factor(datos[[{{variable_factor_lr}}]])
 # resumente datos
 str(datos)
 ```
+
 ### Boxplot todas las variables
 
 ```{r, eval=(Regresion_Logistica | AI)}
@@ -175,7 +175,6 @@ mosaic(matriz_confusion, shade = T, colorize = T,
 - Considerando el criterio de Kaiser (más el ajuste derivado de las simulaciones de Montecarlo) que admite autovalores hasta 0.7, las componentes que se emplearían son: `r if(PCA | AI){as.tibble(pca2.nci$eig) %>% mutate('comp' = str_c('comp', 1:nrow(.))) %>% filter(eigenvalue >= 0.7) %>% .$comp}`.              
 
 - Considerando el criterio de variabilidad explicada del componente, eligiendo aquellas cuyo % de variabilidad no sea menor a 5%, las componentes que se emplearían son: `r if(PCA | AI){as.tibble(pca2.nci$eig) %>% mutate('comp' = str_c('comp', 1:nrow(.))) %>% rename(ptje = 'percentage of variance') %>% filter(ptje > 5) %>% .$comp}`.     
-
 
 
 \pagebreak
